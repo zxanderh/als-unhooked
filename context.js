@@ -450,7 +450,7 @@ function reset() {
   process.namespaces = Object.create(null);
 }
 
-process.namespaces = {};
+process.namespaces = process.namespaces || {};
 
 //const fs = require('fs');
 function debug2(...args) {
