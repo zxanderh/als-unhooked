@@ -1,7 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cls with net connection.value newContextValue" type="mocha-javascript-test-runner" factoryName="Mocha" nameIsGenerated="true">
+  <configuration default="false" name="cls with net connection.value newContextValue" type="mocha-javascript-test-runner" nameIsGenerated="true">
     <node-interpreter>project</node-interpreter>
     <node-options />
+    <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
     <working-directory>$PROJECT_DIR$</working-directory>
     <pass-parent-env>true</pass-parent-env>
     <envs>
@@ -16,6 +17,6 @@
       <name value="cls with net connection" />
       <name value="value newContextValue" />
     </test-names>
-    <method />
+    <method v="2" />
   </configuration>
 </component>

@@ -1,7 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="test/net-events.test.js" type="mocha-javascript-test-runner" factoryName="Mocha" nameIsGenerated="true">
+  <configuration default="false" name="test/net-events.test.js" type="mocha-javascript-test-runner" nameIsGenerated="true">
     <node-interpreter>project</node-interpreter>
     <node-options />
+    <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
     <working-directory>$PROJECT_DIR$</working-directory>
     <pass-parent-env>true</pass-parent-env>
     <envs>
@@ -12,6 +13,6 @@
     <extra-mocha-options />
     <test-kind>TEST_FILE</test-kind>
     <test-file>$PROJECT_DIR$/test/net-events.test.js</test-file>
-    <method />
+    <method v="2" />
   </configuration>
 </component>
