@@ -1,15 +1,11 @@
-'use strict';
+import { ALS as _ALS } from './als.js';
 
-const semver = require('semver');
+class ALS extends _ALS {}
 
-/**
- * In order to increase node version support, this loads the version of context
- * that is appropriate for the version of on nodejs that is running.
- * Node < v8 - uses AsyncWrap and async-hooks-jl
- * Node >= v8 - uses native async-hooks
- */
-if(process && semver.gte(process.versions.node, '8.0.0')){
-  module.exports = require('./context');
-}else{
-  module.exports = require('./context-legacy');
-}
+const defaultInstance = new ALS();
+Reflect.ownKeys(ALS.prototype).filter(k => k !== 'constructor').forEach((key) => {
+	ALS[key] = defaultInstance[key].bind(defaultInstance);
+});
+
+export { ALS };
+export default ALS;

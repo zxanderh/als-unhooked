@@ -5,7 +5,7 @@ const should = chai.should();
 
 import superagent from 'superagent';
 
-import { ALS } from '../index.js';
+import cls from '../index.js';
 import http from 'http';
 
 const keepAlive = process.env.KEEP_ALIVE !== '0';
@@ -13,7 +13,7 @@ const keepAlive = process.env.KEEP_ALIVE !== '0';
 describe('cls with http Agent', () => {
 
 	let httpAgent;
-	const namespace = new ALS();
+	const namespace = cls.createNamespace('httpAgent');
 
 	before(() => {
 		httpAgent = new http.Agent({
@@ -67,7 +67,7 @@ describe('cls with http Agent', () => {
 		function httpGetRequest(cb) {
 
 			// https://github.com/othiym23/node-continuation-local-storage/issues/71
-			// ? namespace.bindEmitter(superagent.Request.super_.prototype);
+			namespace.bindEmitter(superagent.Request.super_.prototype);
 
 			var req = superagent['get']('http://www.google.com');
 

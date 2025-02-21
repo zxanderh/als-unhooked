@@ -1,14 +1,12 @@
 script:
-  - "npm test"
+  - "npm run test-mocha"
 
 language: node_js
 
 node_js:
-  - "6"
-  - "8"
-  - "10"
-  - "12"
-  - "13"
+  - "18"
+  - "20"
+  - "22"
 
 sudo: false
-dist: trusty
+dist: noble

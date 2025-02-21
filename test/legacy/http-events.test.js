@@ -9,7 +9,7 @@ import * as chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import http from 'http';
-import { ALS } from '../index.js';
+import cls from '../index.js';
 chai.should();
 chai.use(sinonChai);
 
@@ -19,7 +19,7 @@ describe('cls with http connections', function() {
 
 	describe('client server', function clientServerTest() {
 
-		var namespace = new ALS();
+		var namespace = cls.createNamespace('http');
 
 		var requestSpy = sinon.spy();
 		var requestDataSpy = sinon.spy();

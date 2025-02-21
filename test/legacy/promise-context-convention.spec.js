@@ -4,7 +4,7 @@ import 'mocha';
 import * as chai from 'chai';
 const should = chai.should();
 
-import { ALS } from '../index.js';
+import context from '../index.js';
 
 /**
  * See https://github.com/othiym23/node-continuation-local-storage/issues/64
@@ -12,7 +12,7 @@ import { ALS } from '../index.js';
 describe('Promise context convention', () => {
 
 	let promise;
-	const ns = new ALS();
+	const ns = context.createNamespace('PromiseConventionNS');
 	let conventionId = 0;
 
 	before((done) => {

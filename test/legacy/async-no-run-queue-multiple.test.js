@@ -1,12 +1,12 @@
 'use strict';
 
 import { expect } from 'chai';
-import { ALS } from '../index.js';
+import * as cls from '../index.js';
 
 describe('cls edges and regression testing', function() {
 
 	it('minimized test case that caused #6011 patch to fail', function(done) {
-		var n = new ALS();
+		var n = cls.createNamespace('test');
 		console.log('+');
 		// when the flaw was in the patch, commenting out this line would fix things:
 		process.nextTick(function() { console.log('!'); });

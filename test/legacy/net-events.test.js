@@ -4,11 +4,11 @@ import 'mocha';
 import * as chai from 'chai';
 const should = chai.should();
 import net from 'net';
-import { ALS } from '../index.js';
+import cls from '../index.js';
 
 describe('cls with net connection', () => {
 
-	const namespace = new ALS();
+	const namespace = cls.createNamespace('net');
 	let testValue1;
 	let testValue2;
 	let testValue3;
@@ -27,17 +27,18 @@ describe('cls with net connection', () => {
 				namespace.set('test', 'newContextValue');
 
 				server = net.createServer((socket) => {
+					namespace.bindEmitter(socket);
 
 					testValue1 = namespace.get('test');
 
-					socket.on('data', namespace.bind(() => {
+					socket.on('data', () => {
 						testValue2 = namespace.get('test');
 						server.close();
 						socket.end('GoodBye');
 
 						serverDone = true;
 						checkDone();
-					}));
+					});
 
 				});
 

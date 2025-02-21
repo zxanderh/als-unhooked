@@ -1,10 +1,11 @@
 'use strict';
 
 import 'mocha';
-import { expect } from 'chai';
+import * as chai from 'chai';
 import util from 'util';
+chai.should();
 
-import { ALS } from '../index.js';
+import cls from '../index.js';
 
 describe('multiple namespaces handles them correctly', () => {
 
@@ -13,8 +14,8 @@ describe('multiple namespaces handles them correctly', () => {
 	let test3Val;
 	let test4Val;
 
-	const ns1 = new ALS();
-	const ns2 = new ALS();
+	const ns1 = cls.createNamespace('ONE');
+	const ns2 = cls.createNamespace('TWO');
 
 
 	before((done) => {
@@ -48,7 +49,7 @@ describe('multiple namespaces handles them correctly', () => {
 
 						});
 
-					}, ns1.getStore());
+					});
 
 				});
 
@@ -58,19 +59,19 @@ describe('multiple namespaces handles them correctly', () => {
 	});
 
 	it('name tom1', () => {
-		expect(test1Val).to.equal('tom1');
+		test1Val.should.equal('tom1');
 	});
 
 	it('name paul2', () => {
-		expect(test2Val).to.equal('paul2');
+		test2Val.should.equal('paul2');
 	});
 
 	it('name bob', () => {
-		expect(test3Val).to.equal('bob');
+		test3Val.should.equal('bob');
 	});
 
 	it('name alice', () => {
-		expect(test4Val).to.equal('alice');
+		test4Val.should.equal('alice');
 	});
 
 });
