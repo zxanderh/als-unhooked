@@ -14,4 +14,13 @@ describe('cls simple async local context', function() {
 			done();
 		});
 	});
+
+	it('asynchronously propagating state with local-context', function(done) {
+
+		ALS.run(function() {
+			ALS.set('test', 'foobar');
+			expect(ALS.get('test')).equal('foobar', 'namespace is working');
+			done();
+		});
+	});
 });

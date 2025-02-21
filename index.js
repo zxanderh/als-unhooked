@@ -3,7 +3,7 @@ import { ALS as _ALS } from './als.js';
 class ALS extends _ALS {}
 
 const defaultInstance = new ALS();
-Reflect.ownKeys(ALS.prototype).filter(k => k !== 'constructor').forEach((key) => {
+Reflect.ownKeys(_ALS.prototype).filter(k => k !== 'constructor').forEach((key) => {
 	ALS[key] = defaultInstance[key].bind(defaultInstance);
 });
 
