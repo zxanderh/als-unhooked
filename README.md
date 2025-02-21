@@ -99,7 +99,7 @@ easily remedy this by passing als.getStore() as the second argument to als.run()
 # copyright & license
 
 See [LICENSE](https://github.com/zxanderh/als-unhooked/blob/main/LICENSE)
-for the details of the BSD 2-clause "simplified" license used by `als-unkhooked`.
+for the details of the BSD 2-clause "simplified" license used by `als-unhooked`.
 
 [timer functions]: https://nodejs.org/api/timers.html
 [setImmediate]:    https://nodejs.org/api/timers.html#timers_setimmediate_callback_arg
