@@ -1,9 +1,12 @@
 'use strict';
 
 import { expect } from 'chai';
-import * as cls from '../index.js';
+import * as cls from '../../legacy.js';
 
 describe('cls edges and regression testing', function() {
+	after(function() {
+		cls.destroyNamespace('test');
+	});
 
 	it('minimized test case that caused #6011 patch to fail', function(done) {
 		var n = cls.createNamespace('test');

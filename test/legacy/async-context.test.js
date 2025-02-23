@@ -1,13 +1,13 @@
 'use strict';
 
 import { expect } from 'chai';
-import * as cls from '../index.js';
+import cls from '../../legacy.js';
 
 describe('cls simple async local context', function() {
 
 	it('asynchronously propagating state with local-context', function(done) {
 		var namespace = cls.createNamespace('namespace');
-		expect(process.namespaces.namespace, 'namespace has been created');
+		expect(process[cls.NAMESPACES_SYMBOL].namespace, 'namespace has been created');
 
 		namespace.run(function() {
 			namespace.set('test', 1337);

@@ -1,20 +1,20 @@
 'use strict';
 
 import 'mocha';
-import * as chai from 'chai';
-const should = chai.should();
+import { expect } from 'chai';
 import net from 'net';
-import cls from '../index.js';
+import cls from '../../legacy.js';
 
-describe('cls with net connection', () => {
+describe('cls with net connection', function() {
 
-	const namespace = cls.createNamespace('net');
+	let namespace;
 	let testValue1;
 	let testValue2;
 	let testValue3;
 	let testValue4;
 
 	before(function(done) {
+		namespace = cls.createNamespace('net');
 
 		let serverDone = false;
 		let clientDone = false;
@@ -26,9 +26,7 @@ describe('cls with net connection', () => {
 			namespace.run(() => {
 				namespace.set('test', 'newContextValue');
 
-				server = net.createServer((socket) => {
-					namespace.bindEmitter(socket);
-
+				server = net.createServer(namespace.bind((socket) => {
 					testValue1 = namespace.get('test');
 
 					socket.on('data', () => {
@@ -40,7 +38,7 @@ describe('cls with net connection', () => {
 						checkDone();
 					});
 
-				});
+				}));
 
 				server.listen(() => {
 					const address = server.address();
@@ -72,24 +70,20 @@ describe('cls with net connection', () => {
 
 	});
 
-	it('value newContextValue', () => {
-		should.exist(testValue1);
-		testValue1.should.equal('newContextValue');
+	it('value newContextValue', function() {
+		expect(testValue1).to.equal('newContextValue');
 	});
 
-	it('value newContextValue 2', () => {
-		should.exist(testValue2);
-		testValue2.should.equal('newContextValue');
+	it('value newContextValue 2', function() {
+		expect(testValue2).to.equal('newContextValue');
 	});
 
-	it('value MONKEY', () => {
-		should.exist(testValue3);
-		testValue3.should.equal('MONKEY');
+	it('value MONKEY', function() {
+		expect(testValue3).to.equal('MONKEY');
 	});
 
-	it('value MONKEY 2', () => {
-		should.exist(testValue4);
-		testValue4.should.equal('MONKEY');
+	it('value MONKEY 2', function() {
+		expect(testValue4).to.equal('MONKEY');
 	});
 
 });

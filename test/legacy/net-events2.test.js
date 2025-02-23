@@ -2,7 +2,7 @@
 
 import { expect } from 'chai';
 import net from 'net';
-import cls from '../index.js';
+import cls from '../../legacy.js';
 
 describe('cls with net connection 2', function() {
 

@@ -9,7 +9,7 @@ import * as chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import http from 'http';
-import cls from '../index.js';
+import cls from '../../legacy.js';
 chai.should();
 chai.use(sinonChai);
 

@@ -5,7 +5,7 @@ const should = chai.should();
 
 import superagent from 'superagent';
 
-import cls from '../index.js';
+import cls from '../../legacy.js';
 import http from 'http';
 
 const keepAlive = process.env.KEEP_ALIVE !== '0';
