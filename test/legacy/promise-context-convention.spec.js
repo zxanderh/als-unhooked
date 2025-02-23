@@ -9,13 +9,13 @@ import context from '../../legacy.js';
 /**
  * See https://github.com/othiym23/node-continuation-local-storage/issues/64
  */
-describe('Promise context convention', () => {
+describe('Promise context convention', function() {
 
 	let promise;
 	const ns = context.createNamespace('PromiseConventionNS');
 	let conventionId = 0;
 
-	before((done) => {
+	before(function(done) {
 		ns.run(() => {
 			ns.set('test', 2);
 			promise = new Promise((resolve) => {
@@ -37,7 +37,7 @@ describe('Promise context convention', () => {
 
 	});
 
-	it('convention should be 3', () => {
+	it('convention should be 3', function() {
 		should.equal(conventionId, 3);
 	});
 

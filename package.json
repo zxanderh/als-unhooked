@@ -15,10 +15,10 @@
     "./legacy": "./legacy.js"
   },
   "scripts": {
-    "test": "mocha test/*.js & tap test/tap/*.tap.js",
-    "test-mocha": "mocha test/*.js",
-    "test-mocha-legacy": "mocha test/legacy/*.js",
-    "test-tap": "tap test/tap/*.tap.js",
+    "test": "npm-run-all test:*",
+    "test:mocha": "mocha test/*.js",
+    "test:mocha:legacy": "mocha test/legacy/*.js",
+    "test:tap": "tap test/tap/*.tap.js",
     "debug": "node --nolazy --debug-brk=5858 ",
     "lint": "eslint .",
     "prepublish": "eslint . --fix"
@@ -55,6 +55,7 @@
     "eslint-plugin-mocha": "^10.5.0",
     "globals": "^15.15.0",
     "mocha": "^11.1.0",
+    "npm-run-all": "^4.1.5",
     "semver": "^7.7.1",
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",

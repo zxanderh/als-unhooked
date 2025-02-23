@@ -28,6 +28,7 @@ describe('cls with net connection', function() {
 
 				server = net.createServer(namespace.bind((socket) => {
 					testValue1 = namespace.get('test');
+					namespace.bindEmitter(socket);
 
 					socket.on('data', () => {
 						testValue2 = namespace.get('test');

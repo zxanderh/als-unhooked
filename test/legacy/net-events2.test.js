@@ -18,7 +18,7 @@ describe('cls with net connection 2', function() {
 		namespace.run(
 			function namespaceRun1(ctx) {
 				namespace.set(keyName, TEST_VALUE);
-				expect(namespace.get(keyName)).equal(ctx.netTest2, 'context should be the same');
+				expect(namespace.get(keyName)).equal(ctx[keyName], 'context should be the same');
 				const server = net.createServer();
 
 				server.on('connection', function OnServerConnection(socket) {
@@ -40,7 +40,7 @@ describe('cls with net connection 2', function() {
 					namespace.run(
 						function namespaceRun2(ctx) {
 							namespace.set(keyName, TEST_VALUE2);
-							expect(namespace.get(keyName)).equal(ctx.netTest2, 'context should be the same');
+							expect(namespace.get(keyName)).equal(ctx[keyName], 'context should be the same');
 
 							const port = server.address().port;
 							const client = net.connect(port, function OnClientConnect() {

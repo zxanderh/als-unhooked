@@ -65,15 +65,11 @@ export class Namespace extends ALS {
 	constructor(name) {
 		super();
 		this.name = name;
-		// changed in 2.7: no default context
-		this._set = [];
-		this.id = null;
-		this._contexts = new Map();
 		this._indent = 0;
 	}
 
 	get indentStr() { return ' '.repeat(this._indent < 0 ? 0 : this._indent); }
-	get active() { return this._set.at(-1); }
+	get active() { return this.getStore(); }
 
 	get(key) {
 		const store = this.getStore();
@@ -90,8 +86,8 @@ export class Namespace extends ALS {
 		const store = this.getStore();
 		// Prototype inherit existing context if created a new child context within existing context.
 		const context = store?.entries ? new Map(store.entries()) : Object.create(store ? store : Object.prototype);
-		context._ns_name = this.name;
-		d(`${this.indentStr}CONTEXT-CREATED Context: (${this.name}) len:${this._set.length} context:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
+		set(context, '_ns_name', this.name);
+		d(`${this.indentStr}CONTEXT-CREATED Context: (${this.name}) context:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
 		return context;
 	}
 
@@ -101,10 +97,9 @@ export class Namespace extends ALS {
 
 	runAndReturn(fn) {
 		const context = this.createContext();
-		this._set.push(context);
-		return super.run(() => {
+		return this.asyncLocalStorage.run(context, () => {
 			try {
-				d(`${this.indentStr}CONTEXT-RUN BEGIN: (${this.name}) len:${this._set.length} context:${util.inspect(context)}`);
+				d(`${this.indentStr}CONTEXT-RUN BEGIN: (${this.name}) context:${util.inspect(context)}`);
 				fn(context);
 				return context;
 			} catch (exception) {
@@ -113,10 +108,9 @@ export class Namespace extends ALS {
 				}
 				throw exception;
 			} finally {
-				d(`${this.indentStr}CONTEXT-RUN END: (${this.name}) len:${this._set.length} ${util.inspect(context)}`);
-				this.exit(context);
+				d(`${this.indentStr}CONTEXT-RUN END: (${this.name}) ${util.inspect(context)}`);
 			}
-		}, context);
+		});
 	}
 
 	/**
@@ -126,7 +120,6 @@ export class Namespace extends ALS {
 	 */
 	runPromise(fn) {
 		const context = this.createContext();
-		this._set.push(context);
 		this.enterWith(context);
 
 		const promise = fn(context);
@@ -134,17 +127,17 @@ export class Namespace extends ALS {
 			throw new Error('fn must return a promise.');
 		}
 
-		d(`CONTEXT-runPromise BEFORE: (${this.name}) len:${this._set.length} ${util.inspect(context)}`);
+		d(`CONTEXT-runPromise BEFORE: (${this.name}) ${util.inspect(context)}`);
 
 		return promise
 			.then(result => {
-				d(`CONTEXT-runPromise AFTER then: (${this.name}) len:${this._set.length} ${util.inspect(context)}`);
+				d(`CONTEXT-runPromise AFTER then: (${this.name}) ${util.inspect(context)}`);
 				this.exit(context);
 				return result;
 			})
 			.catch(err => {
 				err[ERROR_SYMBOL] = context;
-				d(`CONTEXT-runPromise AFTER catch: (${this.name}) len:${this._set.length} ${util.inspect(context)}`);
+				d(`CONTEXT-runPromise AFTER catch: (${this.name}) ${util.inspect(context)}`);
 				this.exit(context);
 				throw err;
 			});
@@ -152,12 +145,11 @@ export class Namespace extends ALS {
 
 	bindFactory(fn, context) {
 		if (!context) {
-			context = this._set.at(-1) || this.createContext();
+			context = this.active || this.createContext();
 		}
 
 		const self = this;
 		return this.bind(function nsBind() {
-			this._set.push(context);
 			try {
 				return fn.apply(this, arguments);
 			} catch (exception) {
@@ -168,30 +160,7 @@ export class Namespace extends ALS {
 			} finally {
 				self.exit(context);
 			}
-		});
-	}
-
-	exit(context) {
-		assert(context, 'context must be provided for exiting');
-		d(`${this.indentStr}CONTEXT-EXIT: (${this.name}) len:${this._set.length} ${util.inspect(context)}`);
-
-		// Fast path for most exits that are at the top of the stack
-		if (this.active === context) {
-			assert(this._set.length, 'can\'t remove top context');
-			this._set.pop();
-			return;
-		}
-
-		// Fast search in the stack using lastIndexOf
-		const index = this._set.lastIndexOf(context);
-
-		if (index < 0) {
-			d('??ERROR?? context exiting but not entered - ignoring: ' + util.inspect(context));
-			assert(index >= 0, 'context not currently entered; can\'t exit. \n' + util.inspect(this) + '\n' + util.inspect(context));
-		} else {
-			assert(index, 'can\'t remove top context');
-			this._set.splice(index, 1);
-		}
+		}, context);
 	}
 
 	destroy() {
@@ -235,8 +204,7 @@ export class Namespace extends ALS {
 
 			let wrapped = unwrapped;
 			const unwrappedContexts = unwrapped[CONTEXTS_SYMBOL];
-			Object.keys(unwrappedContexts).forEach(function(name) {
-				const thunk = unwrappedContexts[name];
+			Object.values(unwrappedContexts).forEach(function(thunk) {
 				wrapped = thunk.namespace.bind(wrapped, thunk.context);
 			});
 			return wrapped;

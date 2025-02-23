@@ -1,12 +1,13 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
-
+import mochaPlugin from 'eslint-plugin-mocha';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
 	{languageOptions: { globals: globals.node }},
 	{languageOptions: { globals: globals.mocha }},
 	pluginJs.configs.recommended,
+	mochaPlugin.configs.flat.recommended,
 	{
 		files: ['**/*.js'],
 		// ignores: ['**/*.test.js'],
@@ -38,6 +39,7 @@ export default [
 					],
 				},
 			],
+			'mocha/no-setup-in-describe': 'off',
 		},
 	},
 ];

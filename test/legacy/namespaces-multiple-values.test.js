@@ -7,7 +7,7 @@ chai.should();
 
 import cls from '../../legacy.js';
 
-describe('multiple namespaces handles them correctly', () => {
+describe('multiple namespaces handles them correctly', function() {
 
 	let test1Val;
 	let test2Val;
@@ -18,7 +18,7 @@ describe('multiple namespaces handles them correctly', () => {
 	const ns2 = cls.createNamespace('TWO');
 
 
-	before((done) => {
+	before(function(done) {
 
 		ns1.run(() => {
 			ns2.run(() => {
@@ -58,19 +58,19 @@ describe('multiple namespaces handles them correctly', () => {
 
 	});
 
-	it('name tom1', () => {
+	it('name tom1', function() {
 		test1Val.should.equal('tom1');
 	});
 
-	it('name paul2', () => {
+	it('name paul2', function() {
 		test2Val.should.equal('paul2');
 	});
 
-	it('name bob', () => {
+	it('name bob', function() {
 		test3Val.should.equal('bob');
 	});
 
-	it('name alice', () => {
+	it('name alice', function() {
 		test4Val.should.equal('alice');
 	});
 
