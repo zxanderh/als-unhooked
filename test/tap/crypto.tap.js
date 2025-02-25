@@ -1,13 +1,13 @@
 'use strict';
 
 import { test } from 'tap';
-import { createNamespace } from '../../index.js';
+import ALS from 'als-unhooked';
 import crypto from 'crypto';
 
 test('continuation-local state with crypto.randomBytes', function(t) {
 	t.plan(1);
 
-	const namespace = createNamespace('namespace');
+	const namespace = new ALS();
 	namespace.run(function() {
 		namespace.set('test', 0xabad1dea);
 
@@ -27,7 +27,7 @@ test('continuation-local state with crypto.randomBytes', function(t) {
 test('continuation-local state with crypto.pseudoRandomBytes', function(t) {
 	t.plan(1);
 
-	const namespace = createNamespace('namespace');
+	const namespace = new ALS();
 	namespace.run(function() {
 		namespace.set('test', 0xabad1dea);
 
@@ -47,7 +47,7 @@ test('continuation-local state with crypto.pseudoRandomBytes', function(t) {
 test('continuation-local state with crypto.pbkdf2', function(t) {
 	t.plan(1);
 
-	const namespace = createNamespace('namespace');
+	const namespace = new ALS();
 	namespace.run(function() {
 		namespace.set('test', 0xabad1dea);
 

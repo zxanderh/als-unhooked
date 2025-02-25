@@ -1,7 +1,7 @@
 'use strict';
 
 import os from 'os';
-import { createNamespace } from './../../index.js';
+import { createNamespace } from 'als-unhooked/legacy';
 import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';

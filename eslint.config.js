@@ -7,7 +7,11 @@ export default [
 	{languageOptions: { globals: globals.node }},
 	{languageOptions: { globals: globals.mocha }},
 	pluginJs.configs.recommended,
-	mochaPlugin.configs.flat.recommended,
+	{
+		...mochaPlugin.configs.flat.recommended,
+		files: ['test/**/*.js'],
+		ignores: ['test/tap/*.js'],
+	},
 	{
 		files: ['**/*.js'],
 		// ignores: ['**/*.test.js'],

@@ -2,22 +2,24 @@
 
 import { test } from 'tap';
 import { EventEmitter } from 'events';
-import context from '../../index.js';
+import als from 'als-unhooked/legacy';
 
 // multiple contexts in use
-var tracer = context.createNamespace('tracer');
+var tracer = als.createNamespace('tracer');
 
-function Trace(harvester) {
-	this.harvester = harvester;
+class Trace {
+	constructor(harvester) {
+		this.harvester = harvester;
+	}
+
+	runHandler(callback) {
+		const wrapped = tracer.bind(() => {
+			callback();
+			this.harvester.emit('finished', tracer.get('transaction'));
+		});
+		wrapped();
+	}
 }
-
-Trace.prototype.runHandler = function(callback) {
-	var wrapped = tracer.bind(function() {
-		callback();
-		this.harvester.emit('finished', tracer.get('transaction'));
-	}.bind(this));
-	wrapped();
-};
 
 
 test('simple tracer built on contexts', function(t) {

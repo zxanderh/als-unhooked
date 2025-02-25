@@ -4,10 +4,10 @@ import { test } from 'tap';
 import { EventEmitter } from 'events';
 
 // module under test
-import context from '../../index.js';
+import als from 'als-unhooked/legacy';
 
 // multiple contexts in use
-var tracer = context.createNamespace('tracer');
+const tracer = als.createNamespace('tracer');
 
 
 test('simple tracer built on contexts', function(t) {
@@ -23,13 +23,13 @@ test('simple tracer built on contexts', function(t) {
 
 	var returnValue = {};
 
-	var returnedValue = tracer.runAndReturn(function(context) {
+	var returnedValue = tracer.runAndReturn(function() {
 		t.ok(tracer.active, 'tracer should have an active context');
 		tracer.set('transaction', {status : 'ok'});
 		t.ok(tracer.get('transaction'), 'can retrieve newly-set value');
 		t.equal(tracer.get('transaction').status, 'ok', 'value should be correct');
 
-		harvester.emit('finished', context.transaction);
+		harvester.emit('finished', tracer.get('transaction'));
 
 		return returnValue;
 	});

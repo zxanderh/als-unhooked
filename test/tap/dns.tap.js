@@ -2,7 +2,7 @@
 
 import dns from 'dns';
 import { test } from 'tap';
-import { createNamespace } from './../../index.js';
+import { createNamespace } from 'als-unhooked/legacy';
 
 test('continuation-local state with MakeCallback and DNS module', function(t) {
 	t.plan(11);
@@ -84,7 +84,7 @@ test('continuation-local state with MakeCallback and DNS module', function(t) {
 				namespace.set('test', 212);
 				t.equal(namespace.get('test'), 212, 'state has been mutated');
 
-				dns.resolveCname('developers.google.com', function(err, addresses) {
+				dns.resolveCname('www.example.com', function(err, addresses) {
 					t.notOk(err, 'lookup succeeded');
 					t.ok(addresses.length > 0, 'some results were found');
 
@@ -152,7 +152,7 @@ test('continuation-local state with MakeCallback and DNS module', function(t) {
 				namespace.set('test', 9000);
 				t.equal(namespace.get('test'), 9000, 'state has been mutated');
 
-				dns.resolveSrv('_xmpp-server._tcp.google.com', function(err, addresses) {
+				dns.resolveSrv('_imaps._tcp.gmail.com', function(err, addresses) {
 					t.notOk(err, 'lookup succeeded');
 					t.ok(addresses.length > 0, 'some results were found');
 

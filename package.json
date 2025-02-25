@@ -15,10 +15,12 @@
     "./legacy": "./legacy.js"
   },
   "scripts": {
+		"----------------- TESTS ------------------------------------": "",
     "test": "npm-run-all test:*",
     "test:mocha": "mocha test/*.js",
     "test:mocha:legacy": "mocha test/legacy/*.js",
     "test:tap": "tap test/tap/*.tap.js",
+		"----------------- UTIL -------------------------------------": "",
     "debug": "node --nolazy --debug-brk=5858 ",
     "lint": "eslint .",
     "prepublish": "eslint . --fix"

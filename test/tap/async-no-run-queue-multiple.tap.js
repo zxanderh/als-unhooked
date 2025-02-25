@@ -1,5 +1,5 @@
 import { test } from 'tap';
-import cls from '../../index.js';
+import als from 'als-unhooked';
 
 test('minimized test case that caused #6011 patch to fail', function(t) {
 	t.plan(3);
@@ -8,7 +8,7 @@ test('minimized test case that caused #6011 patch to fail', function(t) {
 	// when the flaw was in the patch, commenting out this line would fix things:
 	process.nextTick(function() { console.log('!'); });
 
-	var n = cls.createNamespace('test');
+	var n = new als();
 	t.ok(!n.get('state'), 'state should not yet be visible');
 
 	n.run(function() {
@@ -17,7 +17,7 @@ test('minimized test case that caused #6011 patch to fail', function(t) {
 
 		process.nextTick(function() {
 			t.ok(n.get('state'), 'state should be visible');
-			// console.log(cls.trace);
+			// console.log(als.trace);
 		});
 	});
 });

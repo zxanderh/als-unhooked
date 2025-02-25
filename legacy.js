@@ -1,15 +1,18 @@
 import debug from 'debug';
 import assert from 'node:assert';
 import util from 'node:util';
-const d = debug('als:legacy');
 import ALS from './als.js';
+const d = debug('als:legacy');
 
-const NAMESPACES_SYMBOL = Symbol('cls@namespaces');
-const CONTEXTS_SYMBOL = Symbol('cls@contexts');
-const ERROR_SYMBOL = Symbol('error@context');
+// "symbols" remain as strings for backwards-compatibility with cls-hooked
+const NAMESPACES_SYMBOL = 'cls@namespaces';
+const CONTEXTS_SYMBOL = 'cls@contexts';
+const ERROR_SYMBOL = 'error@context';
 
 /** @type {{ [key: string]: Namespace }} */
-const namespaces = process[NAMESPACES_SYMBOL] ||= {};
+const namespaces =
+	process.namespaces =	// storage on `process.namespaces` remains for backwards compatibility with cls-hooked
+	process[NAMESPACES_SYMBOL] ||= {};
 
 let wrapEmitter;
 try {
@@ -92,16 +95,21 @@ export class Namespace extends ALS {
 	}
 
 	run(fn) {
-		void this.runAndReturn(fn);
+		return this._run(fn).context;
 	}
 
 	runAndReturn(fn) {
+		return this._run(fn).returnValue;
+	}
+
+	/** @private */
+	_run(fn) {
 		const context = this.createContext();
 		return this.asyncLocalStorage.run(context, () => {
 			try {
 				d(`${this.indentStr}CONTEXT-RUN BEGIN: (${this.name}) context:${util.inspect(context)}`);
-				fn(context);
-				return context;
+				const returnValue = fn(context);
+				return { context, returnValue };
 			} catch (exception) {
 				if (exception) {
 					exception[ERROR_SYMBOL] = context;
@@ -143,13 +151,12 @@ export class Namespace extends ALS {
 			});
 	}
 
-	bindFactory(fn, context) {
+	bind(fn, context) {
 		if (!context) {
 			context = this.active || this.createContext();
 		}
 
-		const self = this;
-		return this.bind(function nsBind() {
+		return this.asyncLocalStorage.run(context, () => super.bind(function nsBind() {
 			try {
 				return fn.apply(this, arguments);
 			} catch (exception) {
@@ -157,21 +164,12 @@ export class Namespace extends ALS {
 					exception[ERROR_SYMBOL] = context;
 				}
 				throw exception;
-			} finally {
-				self.exit(context);
 			}
-		}, context);
+		}));
 	}
 
 	destroy() {
 		this.asyncLocalStorage.disable();
-	}
-
-	bind(fn, ctx = null) {
-		if (!ctx) {
-			return super.bind(fn);
-		}
-		return this.asyncLocalStorage.run.bind(this.asyncLocalStorage, ctx, fn);
 	}
 
 	bindEmitter(emitter) {
@@ -205,6 +203,7 @@ export class Namespace extends ALS {
 			let wrapped = unwrapped;
 			const unwrappedContexts = unwrapped[CONTEXTS_SYMBOL];
 			Object.values(unwrappedContexts).forEach(function(thunk) {
+				// wrapped = (...rgs) => thunk.namespace.run(() => wrapped(...rgs), thunk.context);
 				wrapped = thunk.namespace.bind(wrapped, thunk.context);
 			});
 			return wrapped;

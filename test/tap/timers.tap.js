@@ -1,7 +1,7 @@
 'use strict';
 
 import { test } from 'tap';
-import { createNamespace } from '../../index.js';
+import { createNamespace } from 'als-unhooked/legacy';
 
 test('continuation-local state with timers', function(t) {
 	t.plan(4);

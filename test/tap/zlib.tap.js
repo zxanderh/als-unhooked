@@ -1,6 +1,6 @@
 'use strict';
 import { test } from 'tap';
-import { createNamespace } from '../../index.js';
+import { createNamespace } from 'als-unhooked/legacy';
 
 import zlib from 'zlib';
 

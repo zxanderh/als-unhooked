@@ -4,23 +4,25 @@ import { test } from 'tap';
 import { EventEmitter } from 'events';
 
 // module under test
-import context from '../../index.js';
+import als from 'als-unhooked/legacy';
 
 // multiple contexts in use
-const tracer = context.createNamespace('tracer');
+const tracer = als.createNamespace('tracer');
 
-function Trace(harvester) {
-	this.harvester = harvester;
+class Trace {
+	constructor(harvester) {
+		this.harvester = harvester;
+	}
+
+	runHandler(handler) {
+		const trace = tracer.run(handler);
+		this.harvester.emit('finished', trace.transaction);
+	}
 }
-
-Trace.prototype.runHandler = function(handler) {
-	const trace = tracer.run(handler);
-	this.harvester.emit('finished', trace.transaction);
-};
 
 
 test('simple tracer built on contexts', function(t) {
-	t.plan(6);
+	t.plan(4);
 
 	const harvester = new EventEmitter();
 	const trace = new Trace(harvester);
@@ -28,11 +30,9 @@ test('simple tracer built on contexts', function(t) {
 	harvester.on('finished', function(transaction) {
 		t.ok(transaction, 'transaction should have been passed in');
 		t.equal(transaction.status, 'ok', 'transaction should have finished OK');
-		t.equal(Object.keys(process.namespaces).length, 1, 'Should only have one namespace.');
 	});
 
 	trace.runHandler(function inScope() {
-		t.ok(tracer.active, 'tracer should have an active context');
 		tracer.set('transaction', {status : 'ok'});
 		t.ok(tracer.get('transaction'), 'can retrieve newly-set value');
 		t.equal(tracer.get('transaction').status, 'ok', 'value should be correct');

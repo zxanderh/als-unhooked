@@ -2,13 +2,13 @@
 
 import { test } from 'tap';
 
-import cls from './../../index.js';
+import als from 'als-unhooked/legacy';
 
 test('multiple namespaces handles them correctly', function(t) {
 	t.plan(4);
 
-	var ns1 = cls.createNamespace('ONE');
-	var ns2 = cls.createNamespace('TWO');
+	var ns1 = als.createNamespace('ONE');
+	var ns2 = als.createNamespace('TWO');
 
 	ns1.run(function() {
 		ns2.run(function() {

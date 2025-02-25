@@ -2,24 +2,24 @@
 import { EventEmitter } from 'events';
 import assert from 'assert';
 import { test } from 'tap';
-import * as cls from '../../index.js';
+import als from 'als-unhooked/legacy';
 
 let nextID = 1;
 function fresh(name) {
-	assert.ok(!cls.getNamespace(name), 'namespace ' + name + ' already exists');
-	return cls.createNamespace(name);
+	assert.ok(!als.getNamespace(name), 'namespace ' + name + ' already exists');
+	return als.createNamespace(name);
 }
 
 function destroy(name) {
 	return function destroyer(t) {
-		cls.destroyNamespace(name);
-		assert.ok(!cls.getNamespace(name), "namespace '" + name + "' should no longer exist");
+		als.destroyNamespace(name);
+		assert.ok(!als.getNamespace(name), "namespace '" + name + "' should no longer exist");
 		t.end();
 	};
 }
 
 function runInTransaction(name, fn) {
-	const namespace = cls.getNamespace(name);
+	const namespace = als.getNamespace(name);
 	assert(namespace, 'namespaces ' + name + " doesn't exist");
 
 	const context = namespace.createContext();
@@ -48,8 +48,8 @@ test('asynchronous state propagation', function(t) {
 	t.test('b. async transaction with setInterval', function(t) {
 		t.plan(4);
 
-		let namespace = fresh('b', this)
-			, count     = 0
+		const namespace = fresh('b', this);
+		let count     = 0
 			, handle
       ;
 
@@ -102,8 +102,8 @@ test('asynchronous state propagation', function(t) {
 	t.test('e. two overlapping async transactions with setTimeout', function(t) {
 		t.plan(6);
 
-		let namespace = fresh('e', this)
-			, first
+		const namespace = fresh('e', this);
+		let first
 			, second
       ;
 
@@ -121,7 +121,7 @@ test('asynchronous state propagation', function(t) {
 		setTimeout(function() {
 			runInTransaction('e', function() {
 				second = namespace.get('transaction');
-				t.notEqual(first, second, 'different transaction IDs');
+				t.not(first, second, 'different transaction IDs');
 				setTimeout(handler.bind(null, second), 100);
 			});
 		}, 25);
@@ -183,7 +183,7 @@ test('asynchronous state propagation', function(t) {
 		process.nextTick(function() {
 			runInTransaction('g', function() {
 				second = namespace.get('transaction');
-				t.notEqual(first, second, 'different transaction IDs');
+				t.not(first, second, 'different transaction IDs');
 				process.nextTick(handler.bind(null, second));
 			});
 		});

@@ -2,7 +2,7 @@
 
 import { test } from 'tap';
 import { EventEmitter } from 'events';
-import cls from '../../index.js';
+import als from 'als-unhooked/legacy';
 
 test('event emitters bound to CLS context', function(t) {
 	t.plan(1);
@@ -11,8 +11,8 @@ test('event emitters bound to CLS context', function(t) {
 		t.plan(6);
 
 		var ee = new EventEmitter();
-		var ns1 = cls.createNamespace('1');
-		var ns2 = cls.createNamespace('2');
+		var ns1 = als.createNamespace('1');
+		var ns2 = als.createNamespace('2');
 
 		// emulate an incoming data emitter
 		setTimeout(function() {

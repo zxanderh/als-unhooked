@@ -1,7 +1,7 @@
 'use strict';
 import net from 'net';
 import { test } from 'tap';
-import { createNamespace } from '../../index.js';
+import { createNamespace } from 'als-unhooked/legacy';
 
 test('continuation-local state with net connection', function(t) {
 	t.plan(4);
@@ -16,6 +16,7 @@ test('continuation-local state with net connection', function(t) {
 
 			server = net.createServer(function(socket) {
 				t.equal(namespace.get('test'), 'newContextValue', 'state has been mutated');
+				namespace.bindEmitter(socket);
 				socket.on('data', function() {
 					t.equal(namespace.get('test'), 'newContextValue', 'state is still preserved');
 					server.close();
