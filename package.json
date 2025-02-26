@@ -2,25 +2,24 @@
   "name": "als-unhooked",
   "version": "0.0.2",
   "description": "cls-hooked replacement using modern context tracking",
-  "main": "index.js",
+  "main": "./index.js",
   "type": "module",
   "files": [
     "index.js",
-    "als.js",
-    "legacy.js"
+    "src/*"
   ],
   "exports": {
     ".": "./index.js",
-    "./no-global": "./als.js",
-    "./legacy": "./legacy.js"
+    "./no-global": "./src/als.js",
+    "./legacy": "./src/legacy.js"
   },
   "scripts": {
-		"----------------- TESTS ------------------------------------": "",
+    "----------------- TESTS ------------------------------------": "",
     "test": "npm-run-all test:*",
     "test:mocha": "mocha test/*.js",
     "test:mocha:legacy": "mocha test/legacy/*.js",
     "test:tap": "tap test/tap/*.tap.js",
-		"----------------- UTIL -------------------------------------": "",
+    "----------------- UTIL -------------------------------------": "",
     "debug": "node --nolazy --debug-brk=5858 ",
     "lint": "eslint .",
     "prepublish": "eslint . --fix"
@@ -33,9 +32,12 @@
     "threading",
     "shared",
     "context",
-    "cls-hooked"
+    "cls-hooked",
+		"AsyncLocalStorage"
   ],
-  "author": "zxanderh",
+  "author": {
+    "name": "zxanderh"
+  },
   "license": "BSD-2-Clause",
   "engineStrict": false,
   "engines": {
@@ -62,6 +64,15 @@
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",
     "superagent": "^10.1.1",
-    "tap": "^21.1.0"
-  }
+    "tap": "^21.1.0",
+    "typescript": "^5.7.3"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "bugs": {
+    "url": "https://github.com/zxanderh/als-unhooked/issues"
+  },
+  "homepage": "https://github.com/zxanderh/als-unhooked#readme",
+  "typings": "./lib/index.d.ts"
 }
