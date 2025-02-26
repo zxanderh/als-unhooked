@@ -24,15 +24,7 @@ try {
 
 export function createNamespace(name) {
 	d('createNamespace', name);
-	if (!name) {
-		throw new Error('Namespace must be given a name.');
-	}
-	if (namespaces[name]) {
-		throw new Error(`Namespace ${name} already exists`);
-	}
-	const namespace = new Namespace(name);
-	namespaces[name] = namespace;
-	return namespace;
+	return new Namespace(name);
 }
 
 export function getNamespace(name) {
@@ -66,7 +58,14 @@ export function reset() {
 
 export class Namespace extends ALS {
 	constructor(name) {
+		if (!name) {
+			throw new Error('Namespace must be given a name.');
+		}
+		if (namespaces[name]) {
+			throw new Error(`Namespace ${name} already exists`);
+		}
 		super();
+		namespaces[name] = this;
 		this.name = name;
 		this._indent = 0;
 	}
@@ -172,6 +171,18 @@ export class Namespace extends ALS {
 		this.asyncLocalStorage.disable();
 	}
 
+	/**
+	 * @experimental
+	 * @deprecated bindEmitter is kept around for backwards compatibility only. For better ways of handling EventEmitters,
+	 * see [Integrating AsyncResource with EventEmitter](https://nodejs.org/api/async_context.html#integrating-asyncresource-with-eventemitter).
+	 * The example is for AsyncResource, but the same concept applies. For example,
+	 * ```js
+	 * namespace.set('foo', 'bar');
+	 * req.on('close', namespace.bind(() => {
+	 * 		namespace.get('foo');	// returns 'bar'
+	 * }));
+	 * ```
+	 */
 	bindEmitter(emitter) {
 		assert(wrapEmitter, 'optional dependency "emitter-listener" must be installed to use Namespace#bindEmitter()!');
 		assert(emitter.on && emitter.addListener && emitter.emit, 'can only bind real EEs');
@@ -200,13 +211,11 @@ export class Namespace extends ALS {
 				return unwrapped;
 			}
 
-			let wrapped = unwrapped;
 			const unwrappedContexts = unwrapped[CONTEXTS_SYMBOL];
-			Object.values(unwrappedContexts).forEach(function(thunk) {
-				// wrapped = (...rgs) => thunk.namespace.run(() => wrapped(...rgs), thunk.context);
-				wrapped = thunk.namespace.bind(wrapped, thunk.context);
-			});
-			return wrapped;
+			for (const thunk of Object.values(unwrappedContexts)) {
+				thunk.namespace.asyncLocalStorage.enterWith(thunk.context);
+			}
+			return unwrapped;
 		}
 
 		wrapEmitter(emitter, attach, bind);
