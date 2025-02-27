@@ -5,17 +5,17 @@ const should = chai.should();
 
 import superagent from 'superagent';
 
-import { ALS } from '../index.js';
+import { ALS } from 'als-unhooked';
 import http from 'http';
 
 const keepAlive = process.env.KEEP_ALIVE !== '0';
 
-describe('cls with http Agent', () => {
+describe('cls with http Agent', function() {
 
 	let httpAgent;
 	const namespace = new ALS();
 
-	before(() => {
+	before(function() {
 		httpAgent = new http.Agent({
 			keepAlive: keepAlive,
 			maxSockets: 1,
@@ -24,11 +24,11 @@ describe('cls with http Agent', () => {
 	});
 
 
-	describe('when making two http requests', ()=> {
+	describe('when making two http requests', function() {
 
 		let innerRequestContextValue;
 
-		it('should retain context during first', (done)=> {
+		it('should retain context during first', function(done) {
 			doClsAction(123, () => {
 				should.exist(innerRequestContextValue);
 				innerRequestContextValue.should.equal(123);
@@ -37,7 +37,7 @@ describe('cls with http Agent', () => {
 		});
 
 
-		it('should retain context during second', (done)=> {
+		it('should retain context during second', function(done) {
 			doClsAction(456, () => {
 				should.exist(innerRequestContextValue);
 				innerRequestContextValue.should.equal(456);

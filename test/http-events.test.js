@@ -9,7 +9,7 @@ import * as chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import http from 'http';
-import { ALS } from '../index.js';
+import { ALS } from 'als-unhooked';
 chai.should();
 chai.use(sinonChai);
 
@@ -28,7 +28,7 @@ describe('cls with http connections', function() {
 		var finalContextValue;
 		var server;
 
-		before((done) => {
+		before(function(done) {
 
 			namespace.run(() => {
 				namespace.set('test', TEST_VALUE);
@@ -75,31 +75,31 @@ describe('cls with http connections', function() {
 			server.closeAllConnections();
 		});
 
-		it('server request event should be called', () => {
+		it('server request event should be called', function() {
 			requestSpy.called.should.be.true;
 		});
 
-		it('server request event should receive data', () => {
+		it('server request event should receive data', function() {
 			requestSpy.should.have.been.calledWith(TEST_VALUE);
 		});
 
-		it('server request data event should be called', () => {
+		it('server request data event should be called', function() {
 			requestDataSpy.called.should.be.true;
 		});
 
-		it('server request data event should receive data', () => {
+		it('server request data event should receive data', function() {
 			requestDataSpy.should.have.been.calledWith(DATUM1, TEST_VALUE);
 		});
 
-		it('client data event should be called', () => {
+		it('client data event should be called', function() {
 			responseSpy.called.should.be.true;
 		});
 
-		it('client data event should receive data', () => {
+		it('client data event should receive data', function() {
 			responseDataSpy.should.have.been.calledWith(DATUM2, 'MONKEY');
 		});
 
-		it('final context value should be ' + TEST_VALUE, () => {
+		it('final context value should be ' + TEST_VALUE, function() {
 			finalContextValue.should.be.equal(TEST_VALUE);
 		});
 

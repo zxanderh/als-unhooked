@@ -2,20 +2,24 @@
   "name": "als-unhooked",
   "version": "0.0.2",
   "description": "cls-hooked replacement using modern context tracking",
-  "main": "./index.js",
+  "main": "./lib/index.js",
   "type": "module",
   "files": [
-    "index.js",
-    "src/*"
+    "lib/*"
   ],
   "exports": {
-    ".": "./index.js",
-    "./no-global": "./src/als.js",
-    "./legacy": "./src/legacy.js"
+    ".": "./lib/index.js",
+    "./no-global": "./lib/als.js",
+    "./legacy": "./lib/legacy.js"
   },
   "scripts": {
+    "----------------- BUILD ------------------------------------": "",
+		"build": "npm-run-all build:*",
+		"build:build": "tsc",
+		"build:fix": "eslint ./lib --fix",
     "----------------- TESTS ------------------------------------": "",
     "test": "npm-run-all test:*",
+    "test:pre": "npm run build",
     "test:mocha": "mocha test/*.js",
     "test:mocha:legacy": "mocha test/legacy/*.js",
     "test:tap": "tap test/tap/*.tap.js",
@@ -33,7 +37,7 @@
     "shared",
     "context",
     "cls-hooked",
-		"AsyncLocalStorage"
+    "AsyncLocalStorage"
   ],
   "author": {
     "name": "zxanderh"

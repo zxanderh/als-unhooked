@@ -1,7 +1,7 @@
 'use strict';
 
 import { expect } from 'chai';
-import { ALS } from '../index.js';
+import { ALS } from 'als-unhooked';
 
 describe('cls edges and regression testing', function() {
 

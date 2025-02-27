@@ -4,9 +4,9 @@ import 'mocha';
 import { expect } from 'chai';
 import util from 'util';
 
-import { ALS } from '../index.js';
+import { ALS } from 'als-unhooked';
 
-describe('multiple namespaces handles them correctly', () => {
+describe('multiple namespaces handles them correctly', function() {
 
 	let test1Val;
 	let test2Val;
@@ -17,7 +17,7 @@ describe('multiple namespaces handles them correctly', () => {
 	const ns2 = new ALS();
 
 
-	before((done) => {
+	before(function(done) {
 
 		ns1.run(() => {
 			ns2.run(() => {
@@ -57,19 +57,19 @@ describe('multiple namespaces handles them correctly', () => {
 
 	});
 
-	it('name tom1', () => {
+	it('name tom1', function() {
 		expect(test1Val).to.equal('tom1');
 	});
 
-	it('name paul2', () => {
+	it('name paul2', function() {
 		expect(test2Val).to.equal('paul2');
 	});
 
-	it('name bob', () => {
+	it('name bob', function() {
 		expect(test3Val).to.equal('bob');
 	});
 
-	it('name alice', () => {
+	it('name alice', function() {
 		expect(test4Val).to.equal('alice');
 	});
 

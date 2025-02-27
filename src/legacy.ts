@@ -2,6 +2,7 @@ import debug from 'debug';
 import assert from 'node:assert';
 import util from 'node:util';
 import ALS from './als.js';
+import type EventEmitter from 'node:events';
 const d = debug('als:legacy');
 
 // "symbols" remain as strings for backwards-compatibility with cls-hooked
@@ -10,11 +11,13 @@ const CONTEXTS_SYMBOL = 'cls@contexts';
 const ERROR_SYMBOL = 'error@context';
 
 /** @type {{ [key: string]: Namespace }} */
-const namespaces =
+const namespaces: Record<string, Namespace> =
+	// @ts-ignore
 	process.namespaces =	// storage on `process.namespaces` remains for backwards compatibility with cls-hooked
+	// @ts-ignore
 	process[NAMESPACES_SYMBOL] ||= {};
 
-let wrapEmitter;
+let wrapEmitter: (emitter: EventEmitter, onAddListener: (fn) => void, onEmit: (fn) => void) => void;
 try {
 	wrapEmitter = (await import('emitter-listener')).default;
 	d('emitter-listener loaded');
@@ -22,22 +25,22 @@ try {
 	d('emitter-listener NOT loaded');
 }
 
-export function createNamespace(name) {
+export function createNamespace(name: string) {
 	d('createNamespace', name);
 	return new Namespace(name);
 }
 
-export function getNamespace(name) {
+export function getNamespace(name: string) {
 	d('getNamespace', name);
 	return namespaces[name];
 }
 
-export function getOrCreateNamespace(name) {
+export function getOrCreateNamespace(name: string) {
 	d('getOrCreateNamespace', name);
 	return namespaces[name] || createNamespace(name);
 }
 
-export function destroyNamespace(namespace) {
+export function destroyNamespace(namespace: string | Namespace) {
 	if (typeof namespace !== 'string') {
 		assert.ok(namespace instanceof Namespace, '"namespace" param should be string or instanceof Namespace');
 		namespace = namespace.name;
@@ -51,13 +54,16 @@ export function destroyNamespace(namespace) {
 
 export function reset() {
 	d('reset');
-	Reflect.ownKeys(namespaces).forEach((name) => {
+	Object.keys(namespaces).forEach((name) => {
 		destroyNamespace(namespaces[name]);
 	});
 }
 
-export class Namespace extends ALS {
-	constructor(name) {
+export class Namespace<K = any, V = any> extends ALS<K, V> {
+	name: string;
+	private _indent = 0;
+
+	constructor(name: string) {
 		if (!name) {
 			throw new Error('Namespace must be given a name.');
 		}
@@ -73,11 +79,11 @@ export class Namespace extends ALS {
 	get indentStr() { return ' '.repeat(this._indent < 0 ? 0 : this._indent); }
 	get active() { return this.getStore(); }
 
-	get(key) {
-		const store = this.getStore();
-		return store ? get(store, key) : undefined;
+	get<T extends V = V>(key: K) {
+		const store = this.getStore() as unknown as MapLike<K, T>;
+		return store ? get<T, K>(store, key) : undefined;
 	}
-	set(key, value) {
+	set<T extends V = V>(key: K, value: T) {
 		const store = this.getStore();
 		if (store) {
 			set(store, key, value);
@@ -93,12 +99,12 @@ export class Namespace extends ALS {
 		return context;
 	}
 
-	run(fn) {
-		return this._run(fn).context;
+	run<T = any>(fn: () => any) {
+		return this._run(fn).context as T;
 	}
 
-	runAndReturn(fn) {
-		return this._run(fn).returnValue;
+	runAndReturn<T>(fn: () => T) {
+		return this._run(fn).returnValue as T;
 	}
 
 	/** @private */
@@ -125,7 +131,7 @@ export class Namespace extends ALS {
 	 * @param {function} fn
 	 * @returns {*}
 	 */
-	runPromise(fn) {
+	runPromise<T>(fn: (ctx: any) => Promise<T>): Promise<T> {
 		const context = this.createContext();
 		this.enterWith(context);
 
@@ -150,13 +156,14 @@ export class Namespace extends ALS {
 			});
 	}
 
-	bind(fn, context) {
+	bind<T extends () => any>(fn: T, context?: any): T {
 		if (!context) {
 			context = this.active || this.createContext();
 		}
 
 		return this.asyncLocalStorage.run(context, () => super.bind(function nsBind() {
 			try {
+				// @ts-ignore
 				return fn.apply(this, arguments);
 			} catch (exception) {
 				if (exception) {
@@ -164,7 +171,7 @@ export class Namespace extends ALS {
 				}
 				throw exception;
 			}
-		}));
+		} as T));
 	}
 
 	destroy() {
@@ -183,8 +190,9 @@ export class Namespace extends ALS {
 	 * }));
 	 * ```
 	 */
-	bindEmitter(emitter) {
+	bindEmitter(emitter: EventEmitter) {
 		assert(wrapEmitter, 'optional dependency "emitter-listener" must be installed to use Namespace#bindEmitter()!');
+		// @ts-ignore
 		assert(emitter.on && emitter.addListener && emitter.emit, 'can only bind real EEs');
 
 		const namespace = this;
@@ -212,7 +220,7 @@ export class Namespace extends ALS {
 			}
 
 			const unwrappedContexts = unwrapped[CONTEXTS_SYMBOL];
-			for (const thunk of Object.values(unwrappedContexts)) {
+			for (const thunk of Object.values(unwrappedContexts) as any[]) {
 				thunk.namespace.asyncLocalStorage.enterWith(thunk.context);
 			}
 			return unwrapped;
@@ -227,17 +235,28 @@ export class Namespace extends ALS {
 	 *
 	 * @param {Error} exception Possibly annotated error.
 	 */
-	fromException(exception) {
+	fromException(exception: Error) {
 		return exception[ERROR_SYMBOL];
 	}
 }
 
-function get(obj, key) {
-	return obj.get && obj.set ? obj.get(key) : obj[key];
+type Obj<T> = Record<PropertyKey, T>;
+interface MapLike<K, V> {
+	get(k: K): V;
+	set(k: K, v: V): void;
+};
+function isMapLike(x: any): x is MapLike<unknown, unknown> {
+	return typeof x?.get === 'function' && typeof x?.set === 'function';
 }
 
-function set(obj, key, value) {
-	obj.get && obj.set ? obj.set(key, value) : obj[key] = value;
+function get<V, K>(obj: Obj<V>, key: K): V;
+function get<V, K>(obj: MapLike<K, V>, key: K): V;
+function get<V, K>(obj: Obj<V> | MapLike<K, V>, key: K) {
+	return isMapLike(obj) ? obj.get(key) : obj[key as PropertyKey];
+}
+
+function set<V, K>(obj: Obj<V> | MapLike<K, V>, key: K, value: V) {
+	isMapLike(obj) ? obj.set(key, value) : obj[key as PropertyKey] = value;
 }
 
 export default {

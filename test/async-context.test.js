@@ -1,7 +1,7 @@
 'use strict';
 
 import { expect } from 'chai';
-import { ALS } from '../index.js';
+import { ALS } from 'als-unhooked';
 
 describe('cls simple async local context', function() {
 
@@ -15,7 +15,7 @@ describe('cls simple async local context', function() {
 		});
 	});
 
-	it('asynchronously propagating state with local-context', function(done) {
+	it('asynchronously propagating state with local-context 2', function(done) {
 
 		ALS.run(function() {
 			ALS.set('test', 'foobar');
