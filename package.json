@@ -22,7 +22,7 @@
     "test:pre": "npm run build",
     "test:mocha": "mocha test/*.js",
     "test:mocha:legacy": "mocha test/legacy/*.js",
-    "test:tap": "tap test/tap/**/*.tap.js",
+    "test:tap": "tap test/tap/*.tap.js",
     "----------------- UTIL -------------------------------------": "",
     "debug": "node --nolazy --debug-brk=5858 ",
     "lint": "eslint .",
