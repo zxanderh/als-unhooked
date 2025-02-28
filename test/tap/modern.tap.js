@@ -31,3 +31,8 @@ test('enter and exit', function(t) {
 
 });
 
+test('defaultInstance', function(t) {
+	t.plan(1);
+
+	t.ok(als[Object.getOwnPropertySymbols(als)[0]]);
+});

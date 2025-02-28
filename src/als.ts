@@ -24,7 +24,7 @@ export class ALS<K = any, V = any> {
 		}
 	}
 	run<T>(fn: () => T, defaults: Obj<V> | MapLike<K, V>) {
-		const store = defaults ? new Map(entries(defaults)) : new Map();
+		const store = new Map(entries(defaults));
 		return this.asyncLocalStorage.run(store, fn);
 	}
 	/** @experimental */
@@ -37,7 +37,7 @@ export class ALS<K = any, V = any> {
 	}
 	/** @experimental */
 	enterWith(defaults: Obj<V> | MapLike<K, V>) {
-		const store = defaults ? new Map(entries(defaults)) : new Map();
+		const store = new Map(entries(defaults));
 		return this.asyncLocalStorage.enterWith(store);
 	}
 }
@@ -51,7 +51,12 @@ function isMapLike(x: any): x is MapLike<unknown, unknown> {
 	return typeof x?.entries === 'function';
 }
 function entries<K, V>(obj: Obj<V> | MapLike<K, V>) {
-	return !obj ? [] : isMapLike(obj) ? obj.entries() : [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)].map((k) => [k, obj[k]] as [K, V]);
+	return !obj
+		? []
+		: isMapLike(obj)
+			? obj.entries()
+			: [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)].map((k) => [k, obj[k]] as [K, V])
+	;
 }
 
 export default ALS;

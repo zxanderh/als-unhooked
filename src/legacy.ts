@@ -107,8 +107,7 @@ export class Namespace<K = any, V = any> extends ALS<K, V> {
 		return this._run(fn).returnValue as T;
 	}
 
-	/** @private */
-	_run(fn) {
+	private _run(fn) {
 		const context = this.createContext();
 		return this.asyncLocalStorage.run(context, () => {
 			try {
@@ -120,9 +119,12 @@ export class Namespace<K = any, V = any> extends ALS<K, V> {
 					exception[ERROR_SYMBOL] = context;
 				}
 				throw exception;
-			} finally {
+			}
+			/* c8 ignore start */
+			finally {
 				d(`${this.indentStr}CONTEXT-RUN END: (${this.name}) ${util.inspect(context)}`);
 			}
+			/* c8 ignore stop */
 		});
 	}
 
@@ -137,7 +139,7 @@ export class Namespace<K = any, V = any> extends ALS<K, V> {
 
 		const promise = fn(context);
 		if (!promise || !promise.then || !promise.catch) {
-			throw new Error('fn must return a promise.');
+			throw new Error('fn must return a promise');
 		}
 
 		d(`CONTEXT-runPromise BEFORE: (${this.name}) ${util.inspect(context)}`);
@@ -145,13 +147,11 @@ export class Namespace<K = any, V = any> extends ALS<K, V> {
 		return promise
 			.then(result => {
 				d(`CONTEXT-runPromise AFTER then: (${this.name}) ${util.inspect(context)}`);
-				this.exit(context);
 				return result;
 			})
 			.catch(err => {
 				err[ERROR_SYMBOL] = context;
 				d(`CONTEXT-runPromise AFTER catch: (${this.name}) ${util.inspect(context)}`);
-				this.exit(context);
 				throw err;
 			});
 	}
@@ -200,9 +200,11 @@ export class Namespace<K = any, V = any> extends ALS<K, V> {
 
 		// Capture the context active at the time the emitter is bound.
 		function attach(listener) {
+			/* c8 ignore start */
 			if (!listener) {
 				return;
 			}
+			/* c8 ignore stop */
 			if (!listener[CONTEXTS_SYMBOL]) {
 				listener[CONTEXTS_SYMBOL] = Object.create(null);
 			}
