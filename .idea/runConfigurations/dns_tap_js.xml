@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="dns.tap.js" type="NodeJSConfigurationType" folderName="tap tests" application-parameters="test/tap/dns.tap.js -Rtap -T -c" path-to-js-file="node_modules/tap/bin/run.js" working-dir="$PROJECT_DIR$">
-    <envs>
-      <env name="TAP_DEBUG" value="0" />
-    </envs>
-    <method v="2" />
-  </configuration>
-</component>
