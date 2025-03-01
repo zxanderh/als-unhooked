@@ -1,12 +1,12 @@
 {
   "name": "als-unhooked",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "als-unhooked",
-      "version": "0.0.2",
+      "version": "0.1.0",
       "license": "BSD-2-Clause",
       "dependencies": {
         "debug": "^4.4.0"

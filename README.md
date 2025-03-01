@@ -92,9 +92,7 @@ calls to als.run() do not automatically inherit their parent context. You can
 easily remedy this by passing als.getStore() as the second argument to als.run().
 
 ## ToDo
- - Finish legacy (total drop-in) implementation
- - Finish legacy tests
- - Pass tap tests
+ - detailed documentation
 
 # copyright & license
 
