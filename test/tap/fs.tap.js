@@ -7,42 +7,50 @@ import path from 'path';
 import { exec } from 'child_process';
 import { test } from 'tap';
 
-// CONSTANTS
-var FILENAME = '__testfile'
-	, DIRNAME = '__TESTDIR'
-	, LINKNAME = '__testlink'
-	, HARDLINKNAME = '__testhardlink'
-  ;
+const tmp = (f) => path.join(TEMP, Array.isArray(f) ? f[0] : f);
 
-function createFile(assert) {
-	var contents = Buffer.from('UHOH')
-		, file = fs.openSync(FILENAME, 'w')
-		, written = fs.writeSync(file, contents, 0, contents.length, 0)
-    ;
-	assert.equals(written, contents.length, 'whole buffer was written');
-	var rc = fs.closeSync(file);
-	// need this here to avoid dealing with umask complications
-	fs.chmodSync(FILENAME, '0666');
-	return rc;
+// CONSTANTS
+const TEMP = os.tmpdir();
+// const FILENAME = tmp`__testfile`;
+const DIRNAME = tmp`__TESTDIR`;
+const LINKNAME = tmp`__testlink`;
+const HARDLINKNAME = tmp`__testhardlink`;
+
+function getFileName() {
+	return tmp(Math.random().toString(16).slice(2));
 }
 
-function deleteFile() {
+function createFile(assert) {
+	const fileName = getFileName();
+	var contents = Buffer.from('UHOH')
+		, file = fs.openSync(fileName, 'w')
+		, written = fs.writeSync(file, contents, 0, contents.length, 0)
+    ;
+	assert.equal(written, contents.length, 'whole buffer was written');
+	fs.closeSync(file);
+	// need this here to avoid dealing with umask complications
+	fs.chmodSync(fileName, '0666');
+	return fileName;
+}
+
+function deleteFile(FILENAME) {
 	return fs.unlinkSync(FILENAME);
 }
 
 
 function createLink(assert) {
-	createFile(assert);
+	const FILENAME = createFile(assert);
 	fs.symlinkSync(FILENAME, LINKNAME);
 	if (fs.lchmodSync) {
 		// This function only exists on BSD systems (like OSX)
 		fs.lchmodSync(LINKNAME, '0777');
 	}
+	return FILENAME;
 }
 
-function deleteLink() {
+function deleteLink(FILENAME) {
 	fs.unlinkSync(LINKNAME);
-	return deleteFile();
+	return deleteFile(FILENAME);
 }
 
 
@@ -76,20 +84,7 @@ function mapIds(username, groupname, callback) {
 	});
 }
 
-try{
-	if(fs.existsSync(FILENAME)) {
-		deleteFile();
-	}
-}catch(err){
-	console.log(err);
-}
-
 test('continuation-local state with MakeCallback and fs module', function(t) {
-
-	if(os.platform() === 'win32'){
-		t.plan(0);
-		return;
-	}
 
 	t.plan(33);
 
@@ -98,7 +93,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 		namespace.set('test', 0xabad1dea);
 
 		t.test('fs.rename', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'rename');
@@ -119,7 +114,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 			// truncate -> ftruncate in Node > 0.8.x
 			if (!fs.ftruncate) {return t.end();}
 
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'truncate');
@@ -134,14 +129,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(namespace.get('test'), 'truncate',
 						"mutated state has persisted to fs.truncate's callback");
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.ftruncate', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			// truncate -> ftruncate in Node > 0.8.x
 			var truncate = fs.ftruncate ? fs.ftruncate : fs.truncate;
@@ -161,14 +156,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(namespace.get('test'), 'ftruncate',
 						"mutated state has persisted to fs.ftruncate's callback");
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
-		t.test('fs.chown', function(t) {
-			createFile(t);
+		t.test('fs.chown', { skip: os.platform() === 'win32' }, function(t) {
+			const FILENAME = createFile(t);
 
 			mapIds('daemon', 'daemon', function(error, uid, gid) {
 				t.notOk(error, "looking up uid & gid shouldn't error");
@@ -185,15 +180,15 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 						t.equal(namespace.get('test'), 'chown',
 							"mutated state has persisted to fs.chown's callback");
 
-						deleteFile();
+						deleteFile(FILENAME);
 						t.end();
 					});
 				});
 			});
 		});
 
-		t.test('fs.fchown', function(t) {
-			createFile(t);
+		t.test('fs.fchown', { skip: os.platform() === 'win32' }, function(t) {
+			const FILENAME = createFile(t);
 
 			mapIds('daemon', 'daemon', function(error, uid, gid) {
 				t.notOk(error, "looking up uid & gid shouldn't error");
@@ -212,16 +207,16 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 							"mutated state has persisted to fs.fchown's callback");
 
 						fs.closeSync(file);
-						deleteFile();
+						deleteFile(FILENAME);
 						t.end();
 					});
 				});
 			});
 		});
 
-		t.test('fs.lchown', function(t) {
+		t.test('fs.lchown', { skip: os.platform() === 'win32' }, function(t) {
 			if (!fs.lchown) {return t.end();}
-			createLink(t);
+			const FILENAME = createLink(t);
 
 			mapIds('daemon', 'daemon', function(error, uid, gid) {
 				t.notOk(error, "looking up uid & gid shouldn't error");
@@ -238,15 +233,15 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 						t.equal(namespace.get('test'), 'lchown',
 							"mutated state has persisted to fs.lchown's callback");
 
-						deleteLink();
+						deleteLink(FILENAME);
 						t.end();
 					});
 				});
 			});
 		});
 
-		t.test('fs.chmod', function(t) {
-			createFile(t);
+		t.test('fs.chmod', { skip: os.platform() === 'win32' }, function(t) {
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'chmod');
@@ -261,14 +256,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					var stats = fs.statSync(FILENAME);
 					t.equal(stats.mode.toString(8), '100700', 'extra access bits are stripped');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
-		t.test('fs.fchmod', function(t) {
-			createFile(t);
+		t.test('fs.fchmod', { skip: os.platform() === 'win32' }, function(t) {
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'fchmod');
@@ -285,15 +280,15 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					var stats = fs.statSync(FILENAME);
 					t.equal(stats.mode.toString(8), '100700', 'extra access bits are stripped');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
-		t.test('fs.lchmod', function(t) {
+		t.test('fs.lchmod', { skip: os.platform() === 'win32' }, function(t) {
 			if (!fs.lchmod) {return t.end();}
-			createLink(t);
+			const FILENAME = createLink(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'lchmod');
@@ -308,14 +303,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					var stats = fs.lstatSync(LINKNAME);
 					t.equal(stats.mode.toString(8), '120700', 'extra access bits are stripped');
 
-					deleteLink();
+					deleteLink(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.stat', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'stat');
@@ -329,14 +324,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 					t.equal(stats.mode.toString(8), '100666', 'permissions should be as created');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.fstat', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'fstat');
@@ -352,14 +347,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(stats.mode.toString(8), '100666', 'permissions should be as created');
 
 					fs.closeSync(file);
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
-		t.test('fs.lstat', function(t) {
-			createLink(t);
+		t.test('fs.lstat', { skip: os.platform() === 'win32' }, function(t) {
+			const FILENAME = createLink(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'lstat');
@@ -377,14 +372,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 						'permissions should be as created',
 					);
 
-					deleteLink();
+					deleteLink(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.link', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'link');
@@ -402,14 +397,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(orig.ino, linked.ino, 'entries should point to same file');
 
 					t.notOk(fs.unlinkSync(HARDLINKNAME), 'link has been removed');
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
-		t.test('fs.symlink', function(t) {
-			createFile(t);
+		t.test('fs.symlink', { skip: os.platform() === 'win32' }, function(t) {
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'symlink');
@@ -425,14 +420,15 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(pointed, FILENAME, 'symlink points back to original file');
 
 					t.notOk(fs.unlinkSync(LINKNAME), 'symlink has been removed');
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.readlink', function(t) {
-			createLink(t);
+			if (os.platform() === 'win32') {return t.end();}
+			const FILENAME = createLink(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'readlink');
@@ -446,14 +442,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 					t.equal(pointed, FILENAME, 'symlink points back to original file');
 
-					deleteLink();
+					deleteLink(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.unlink', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'unlink');
@@ -465,14 +461,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(namespace.get('test'), 'unlink',
 						"mutated state has persisted to fs.unlink's callback");
 
-					t.notOk(fs.exists(FILENAME), 'file should be gone');
+					t.notOk(fs.existsSync(FILENAME), 'file should be gone');
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.realpath', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'realpath');
@@ -486,7 +482,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 					t.equal(real, path.resolve(FILENAME), 'no funny business with the real path');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
@@ -568,13 +564,13 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 		});
 
 		t.test('fs.watch', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'watch');
 				t.equal(namespace.get('test'), 'watch', 'state has been mutated');
 
-				var watcher = fs.watch(FILENAME, {persistent: false, interval: 200},
+				var watcher = fs.watch(FILENAME,
 					function(event) {
 						t.equal(namespace.get('test'), 'watch',
 							"mutated state has persisted to fs.watch's callback");
@@ -583,7 +579,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 						watcher.close();
 						process.nextTick(function cleanup() {
-							deleteFile();
+							deleteFile(FILENAME);
 							t.end();
 						});
 					});
@@ -595,7 +591,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 		});
 
 		t.test('fs.utimes', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			/* utimes(2) takes seconds since the epoch, and Date() deals with
        * milliseconds. I just want a date some time in the past.
@@ -617,19 +613,19 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 						"mutated state has persisted to fs.utimes's callback");
 
 					var after = fs.statSync(FILENAME);
-					t.deepEqual(after.atime, PASTIME, 'access time of newly-created file is reset');
-					t.deepEqual(after.mtime, PASTIME, 'mod time of newly-created file is reset');
-					t.notDeepEqual(before.atime, after.atime, 'access time changed');
-					t.notDeepEqual(before.mtime, after.mtime, 'mod time changed');
+					t.same(after.atime, PASTIME, 'access time of newly-created file is reset');
+					t.same(after.mtime, PASTIME, 'mod time of newly-created file is reset');
+					t.notSame(before.atime, after.atime, 'access time changed');
+					t.notSame(before.mtime, after.mtime, 'mod time changed');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.futimes', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			/* futimes(2) takes seconds since the epoch, and Date() deals with
        * milliseconds. I just want a date some time in the past.
@@ -653,19 +649,19 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 						"mutated state has persisted to fs.futimes's callback");
 
 					var after = fs.statSync(FILENAME);
-					t.deepEqual(after.atime, PASTIME, 'access time of newly-created file is reset');
-					t.deepEqual(after.mtime, PASTIME, 'mod time of newly-created file is reset');
-					t.notDeepEqual(before.atime, after.atime, 'access time changed');
-					t.notDeepEqual(before.mtime, after.mtime, 'mod time changed');
+					t.same(after.atime, PASTIME, 'access time of newly-created file is reset');
+					t.same(after.mtime, PASTIME, 'mod time of newly-created file is reset');
+					t.notSame(before.atime, after.atime, 'access time changed');
+					t.notSame(before.mtime, after.mtime, 'mod time changed');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.fsync', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'fsync');
@@ -679,14 +675,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 						"mutated state has persisted to fs.fsync's callback");
 
 					fs.closeSync(file);
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.open', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'open');
@@ -704,14 +700,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(contents.toString(), 'UHOH', 'contents are still available');
 
 					fs.closeSync(file);
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.close', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'close');
@@ -724,14 +720,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(namespace.get('test'), 'close',
 						"mutated state has persisted to fs.close's callback");
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.read', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'read');
@@ -749,14 +745,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(contents.toString(), 'UHOH', 'contents are still available');
 
 					fs.closeSync(file);
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.write', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'write');
@@ -776,14 +772,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					var readback = fs.readFileSync(FILENAME);
 					t.equal(readback.toString(), 'yeap', 'contents are still available');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.readFile', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'readFile');
@@ -797,14 +793,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 					t.equal(contents.toString(), 'UHOH', 'contents are still available');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.writeFile', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'writeFile');
@@ -819,14 +815,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					var readback = fs.readFileSync(FILENAME);
 					t.equal(readback.toString(), 'woopwoop', 'rewritten contents are available');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.appendFile', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'appendFile');
@@ -842,14 +838,14 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 					t.equal(readback.toString(), 'UHOH/jk',
 						'appended contents are still available');
 
-					deleteFile();
+					deleteFile(FILENAME);
 					t.end();
 				});
 			});
 		});
 
 		t.test('fs.exists', function(t) {
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'exists');
@@ -867,7 +863,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 						t.notOk(nope, "nonexistent file doesn't exist.");
 
-						deleteFile();
+						deleteFile(FILENAME);
 						t.end();
 					});
 				});
@@ -876,7 +872,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 		t.test('fs.watchFile', {timeout: 10000, diagnostic: true}, function(t) {
 			t.comment('starting: fs.watchFile test');
-			createFile(t);
+			const FILENAME = createFile(t);
 
 			namespace.run(function() {
 				namespace.set('test', 'watchFile');
@@ -892,7 +888,7 @@ test('continuation-local state with MakeCallback and fs module', function(t) {
 
 					fs.unwatchFile(FILENAME);
 					process.nextTick(function() {
-						deleteFile();
+						deleteFile(FILENAME);
 						t.end();
 					}, 10);
 				});
