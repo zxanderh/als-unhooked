@@ -2,7 +2,7 @@ import t from 'tap';
 import legacy from 'als-unhooked/legacy';
 
 t.test('legacy API', async (t) => {
-	t.plan(13);
+	t.plan(15);
 
 	const namespace = legacy.createNamespace('test1');
 	const sameNampespace = legacy.getOrCreateNamespace('test1');
@@ -31,4 +31,12 @@ t.test('legacy API', async (t) => {
 	const bound = namespace.bind(() => { throw new Error('oh no'); }, { blah: 5 });
 	const err2 = t.throws(() => bound());
 	t.equal(err2[legacy.ERROR_SYMBOL].blah, 5);
+
+	const map = new Map([['foo', 5]]);
+	namespace.bind(() => {
+		t.equal(namespace.get('foo'), 5);
+		namespace.run(() => {
+			t.equal(namespace.get('foo'), 5, 'should inherit values from map');
+		});
+	}, map)();
 });

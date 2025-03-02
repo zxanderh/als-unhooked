@@ -10,3 +10,6 @@ Object.defineProperty(ALS, Symbol('defaultInstance'), { enumerable: false, get: 
 
 export { als as ALS };
 export default als;
+export {
+	MapLike,
+} from './_common.js';

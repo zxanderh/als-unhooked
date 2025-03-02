@@ -1,8 +1,8 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
 import mochaPlugin from 'eslint-plugin-mocha';
+import tseslint, { config as ts } from 'typescript-eslint';
 
-/** @type {import('eslint').Linter.Config[]} */
 export default [
 	{languageOptions: { globals: globals.node }},
 	{languageOptions: { globals: globals.mocha }},
@@ -12,28 +12,44 @@ export default [
 		files: ['test/**/*.js'],
 		ignores: ['test/tap/*.js'],
 	},
+	...ts({
+		files: ['src/**/*.ts'],
+		extends: [
+			tseslint.configs.recommended,
+		],
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/no-this-alias': 'off',
+			'@typescript-eslint/no-unused-expressions': ['error', {
+				allowTernary: true,
+			}],
+			'@typescript-eslint/ban-ts-comment': [
+				'error',
+				{
+					// minimumDescriptionLength: 3,
+					'ts-check': false,
+					// 'ts-expect-error': 'allow-with-description',
+					'ts-expect-error': false,
+					'ts-ignore': false,
+					'ts-nocheck': true,
+				},
+			],
+			'@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
+		},
+	}),
 	{
-		files: ['**/*.js'],
-		// ignores: ['**/*.test.js'],
+		files: ['**/*.js', '**/*.ts'],
+		ignores: ['**/*.d.ts'],
 		rules: {
 			quotes: [ 'warn', 'single', { avoidEscape: true } ],
 			'quote-props': [ 'warn', 'as-needed' ],
 			'comma-dangle': [ 'error', 'always-multiline' ],
-			'no-unused-vars': 'error',
 			semi: [ 'error', 'always' ],
 			indent: [ 'error', 'tab' ],
 			curly: 'error',
 			'eol-last': 'error',
 			eqeqeq: [ 'error', 'smart' ],
 			'prefer-const': 'error',
-			'space-before-function-paren': [
-				'error',
-				{
-					anonymous: 'never',
-					asyncArrow: 'always',
-					named: 'never',
-				},
-			],
 			'spaced-comment': [
 				'error',
 				'always',
@@ -43,7 +59,22 @@ export default [
 					],
 				},
 			],
+			'prefer-rest-params': 'off',
 			'mocha/no-setup-in-describe': 'off',
+		},
+	},
+	{
+		files: ['**/*.js'],
+		rules: {
+			'no-unused-vars': 'error',
+			'space-before-function-paren': [
+				'error',
+				{
+					anonymous: 'never',
+					asyncArrow: 'always',
+					named: 'never',
+				},
+			],
 		},
 	},
 ];
