@@ -13,7 +13,8 @@ export default [
 		ignores: ['test/tap/*.js'],
 	},
 	...ts({
-		files: ['src/**/*.ts'],
+		files: ['**/*.ts'],
+		ignores: ['lib/'],
 		extends: [
 			tseslint.configs.recommended,
 		],
