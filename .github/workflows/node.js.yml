@@ -34,14 +34,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [mysql:8.0]
-        dialect: [mysql]
-        node-version: [20]
+        node-version: [18.x, 20.x, 22.x]
     name: Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: ${{ matrix.image }}
+        image: mysql:8.0
         env:
           MYSQL_DATABASE: sequelize_test
           MYSQL_USER: sequelize_test
@@ -52,7 +50,7 @@ jobs:
         options: --health-cmd="mysqladmin -usequelize_test -psequelize_test status" --health-interval 10s --health-timeout 5s --health-retries 5 --tmpfs /var/lib/mysql:rw
     env:
       SEQ_PORT: 3310
-      DIALECT: ${{ matrix.dialect }}
+      DIALECT: mysql
     steps:
       - run: if [ "$(dpkg -l | awk '/mysql-client/ {print }'|wc -l)" -eq 0 ]; then apt update && apt install mysql-client -y; fi
       - run: mysql --host 127.0.0.1 --port 3310 -uroot -psequelize_test -e "GRANT ALL ON *.* TO 'sequelize_test'@'%' with grant option; FLUSH PRIVILEGES;"
