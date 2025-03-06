@@ -21,7 +21,6 @@ if (current.dialect.supports.transactions) {
 		});
 
 		beforeEach(async function() {
-			this.sequelize = await Support.prepareTransactionTest(this.sequelize);
 			this.ns = cls.getNamespace('sequelize');
 			this.User = this.sequelize.define('user', {
 				name: Sequelize.STRING,

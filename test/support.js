@@ -78,26 +78,6 @@ const Support = {
 
 		return Support.getSequelizeInstance(config.database, config.username, config.password, sequelizeOptions);
 	},
-	async prepareTransactionTest(sequelize) {
-		// const dialect = Support.getTestDialect();
-
-		// if (dialect === 'sqlite') {
-		// 	const p = path.join(__dirname, 'tmp', 'db.sqlite');
-		// 	if (lastSqliteInstance) {
-		// 		await lastSqliteInstance.close();
-		// 	}
-		// 	if (fs.existsSync(p)) {
-		// 		fs.unlinkSync(p);
-		// 	}
-		// 	const options = { ...sequelize.options, storage: p },
-		// 		_sequelize = new Sequelize(sequelize.config.database, null, null, options);
-
-		// 	await _sequelize.sync({ force: true });
-		// 	lastSqliteInstance = _sequelize;
-		// 	return _sequelize;
-		// }
-		return sequelize;
-	},
 	// ! addtl
 	getSequelizeInstance(db, user, pass, options) {
 		options = options || {};
