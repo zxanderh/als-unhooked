@@ -13,6 +13,7 @@ t.test('legacy API', async (t) => {
 	t.equal(Object.keys(process.namespaces).length, 2);
 	t.throws(() => legacy.createNamespace('test1'), 'Namespace test1 already exists');
 	t.type(namespace.indentStr, 'string');
+	// @ts-expect-error need access to private var
 	namespace._indent = -1;
 	t.equal(namespace.indentStr.length, 0);
 
@@ -26,6 +27,7 @@ t.test('legacy API', async (t) => {
 	const err = await t.rejects(namespace.runPromise(() => Promise.reject(new Error('nope'))), 'nope');
 	t.ok(err[legacy.ERROR_SYMBOL]);
 
+	// @ts-expect-error intentional error
 	t.throws(() => namespace.runPromise(() => 'not a promise'), 'fn must return a promise');
 
 	const bound = namespace.bind(() => { throw new Error('oh no'); }, { blah: 5 });

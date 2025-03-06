@@ -8,7 +8,7 @@ test('minimized test case that caused #6011 patch to fail', function(t) {
 	// when the flaw was in the patch, commenting out this line would fix things:
 	process.nextTick(function() { console.log('!'); });
 
-	var n = new als();
+	const n = new als();
 	t.ok(!n.get('state'), 'state should not yet be visible');
 
 	n.run(function() {

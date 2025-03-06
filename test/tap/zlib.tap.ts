@@ -7,7 +7,7 @@ import zlib from 'zlib';
 test('continuation-local state with zlib', function(t) {
 	t.plan(1);
 
-	var namespace = createNamespace('namespace');
+	const namespace = createNamespace('namespace');
 	namespace.run(function() {
 		namespace.set('test', 0xabad1dea);
 

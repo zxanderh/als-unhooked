@@ -6,9 +6,10 @@ import als from 'als-unhooked/legacy';
 test('namespace management', function(t) {
 	t.plan(8);
 
+	// @ts-expect-error intentional error
 	t.throws(function() { als.createNamespace(); }, 'name is required');
 
-	var namespace = als.createNamespace('test');
+	let namespace = als.createNamespace('test');
 	t.ok(namespace, 'namespace is returned upon creation');
 
 	t.equal(als.getNamespace('test'), namespace, 'namespace lookup works');

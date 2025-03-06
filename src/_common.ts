@@ -23,7 +23,7 @@ export function entries<K, V>(obj?: Dictionary<K, V>) {
 }
 
 export function get<V, K>(obj: Dictionary<K, V>, key: K) {
-	return isMapLike(obj) ? obj.get(key) : obj[key as PropertyKey];
+	return isMapLike(obj) ? obj.get(key) : obj[key as PropertyKey] as V;
 }
 
 export function set<V, K>(obj: Dictionary<K, V>, key: K, value: V) {

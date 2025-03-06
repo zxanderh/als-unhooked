@@ -51,7 +51,7 @@ export class ALS<K = any, V = any, S extends Dictionary<K, V> = Map<K, V>> {
 	 * @param defaults - The default values to initialize the store with.
 	 * @returns The result of the function.
 	 */
-	run<T>(fn: () => T, defaults: Dictionary<K, V>) {
+	run<T>(fn: () => T, defaults?: Dictionary<K, V>) {
 		const store = this.createStore(defaults);
 		return this.asyncLocalStorage.run<T>(store, fn);
 	}
@@ -81,7 +81,7 @@ export class ALS<K = any, V = any, S extends Dictionary<K, V> = Map<K, V>> {
 	 * @experimental
 	 * @param defaults - The default values to initialize the store with.
 	 */
-	enterWith(defaults: Dictionary<K, V>) {
+	enterWith(defaults?: Dictionary<K, V>) {
 		const store = this.createStore(defaults);
 		return this.asyncLocalStorage.enterWith(store);
 	}

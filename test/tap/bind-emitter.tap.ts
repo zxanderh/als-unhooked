@@ -4,7 +4,7 @@ import http from 'http';
 import { test } from 'tap';
 import { EventEmitter } from 'events';
 import { Readable } from 'stream';
-import als from 'als-unhooked/legacy';
+import als, { WrappedEmitter } from 'als-unhooked/legacy';
 
 test('event emitters bound to CLS context', function(t) {
 	t.plan(13);
@@ -12,9 +12,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('handler registered in context, emit out of context', function(t) {
 		t.plan(1);
 
-		var n  = als.createNamespace('in')
-			, ee = new EventEmitter()
-      ;
+		const n  = als.createNamespace('in');
+		const ee = new EventEmitter();
 
 		n.run(function() {
 			n.set('value', 'hello');
@@ -31,9 +30,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('once handler registered in context', function(t) {
 		t.plan(1);
 
-		var n  = als.createNamespace('inOnce')
-			, ee = new EventEmitter()
-      ;
+		const n  = als.createNamespace('inOnce');
+		const ee = new EventEmitter();
 
 		n.run(function() {
 			n.set('value', 'hello');
@@ -50,9 +48,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('handler registered out of context, emit in context', function(t) {
 		t.plan(1);
 
-		var n  = als.createNamespace('out')
-			, ee = new EventEmitter()
-      ;
+		const n  = als.createNamespace('out');
+		const ee = new EventEmitter();
 
 		ee.on('event', function() {
 			t.equal(n.get('value'), 'hello', 'value still set in EE.');
@@ -70,9 +67,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('once handler registered out of context', function(t) {
 		t.plan(1);
 
-		var n  = als.createNamespace('outOnce')
-			, ee = new EventEmitter()
-      ;
+		const n  = als.createNamespace('outOnce');
+		const ee = new EventEmitter();
 
 		ee.once('event', function() {
 			t.equal(n.get('value'), 'hello', 'value still set in EE.');
@@ -90,9 +86,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('handler registered out of context, emit out of context', function(t) {
 		t.plan(1);
 
-		var n  = als.createNamespace('out')
-			, ee = new EventEmitter()
-      ;
+		const n  = als.createNamespace('out');
+		const ee = new EventEmitter();
 
 		ee.on('event', function() {
 			t.equal(n.get('value'), undefined, 'no context.');
@@ -111,9 +106,8 @@ test('event emitters bound to CLS context', function(t) {
 		if (Readable) {
 			t.plan(12);
 
-			var n  = als.createNamespace('outOnceReadable')
-				, re = new Readable()
-        ;
+			const n  = als.createNamespace('outOnceReadable');
+			const re = new Readable() as WrappedEmitter<Readable>;
 
 			re._read = function() {};
 
@@ -154,9 +148,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('emitter with newListener that removes handler', function(t) {
 		t.plan(3);
 
-		var n  = als.createNamespace('newListener')
-			, ee = new EventEmitter()
-      ;
+		const n  = als.createNamespace('newListener');
+		const ee = new EventEmitter();
 
 		// add monkeypatching to ee
 		n.bindEmitter(ee);
@@ -193,9 +186,8 @@ test('event emitters bound to CLS context', function(t) {
 		if (Readable) {
 			t.plan(12);
 
-			var n  = als.createNamespace('outOnReadable')
-				, re = new Readable()
-        ;
+			const n  = als.createNamespace('outOnReadable');
+			const re = new Readable() as WrappedEmitter<Readable>;
 
 			re._read = function() {};
 
@@ -237,9 +229,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('handler added but used entirely out of context', function(t) {
 		t.plan(2);
 
-		var n  = als.createNamespace('none')
-			, ee = new EventEmitter()
-      ;
+		const n  = als.createNamespace('none');
+		const ee = new EventEmitter();
 
 		n.run(function() {
 			n.set('value', 'hello');
@@ -258,10 +249,10 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('handler added but no listeners registered', function(t) {
 		t.plan(3);
 
-		var n  = als.createNamespace('no_listener');
+		const n  = als.createNamespace('no_listener');
 
 		// only fails on Node < 0.10
-		var server = http.createServer(function(req, res) {
+		const server = http.createServer(function(req, res) {
 			n.bindEmitter(req);
 
 			t.doesNotThrow(function() {
@@ -289,9 +280,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('listener with parameters added but not bound to context', function(t) {
 		t.plan(2);
 
-		var ee = new EventEmitter()
-			, n  = als.createNamespace('param_list')
-      ;
+		const ee = new EventEmitter();
+		const n  = als.createNamespace('param_list');
 
 		function sent(value) {
 			t.equal(value, 3, 'sent value is correct');
@@ -308,9 +298,8 @@ test('event emitters bound to CLS context', function(t) {
 	t.test("listener that throws doesn't leave removeListener wrapped", function(t) {
 		t.plan(4);
 
-		var ee = new EventEmitter()
-			, n  = als.createNamespace('kaboom')
-      ;
+		const ee = new EventEmitter() as WrappedEmitter<EventEmitter>;
+		const n  = als.createNamespace('kaboom');
 
 		n.bindEmitter(ee);
 
@@ -332,10 +321,9 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('emitter bound to multiple namespaces handles them correctly', function(t) {
 		t.plan(8);
 
-		var ee = new EventEmitter()
-			, ns1 = als.createNamespace('1')
-			, ns2 = als.createNamespace('2')
-      ;
+		const ee = new EventEmitter();
+		const ns1 = als.createNamespace('1');
+		const ns2 = als.createNamespace('2');
 
 		// emulate an incoming data emitter
 		setTimeout(function() {

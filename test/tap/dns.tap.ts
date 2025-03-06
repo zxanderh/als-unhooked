@@ -4,10 +4,15 @@ import dns from 'dns';
 import { test } from 'tap';
 import { createNamespace } from 'als-unhooked/legacy';
 
+dns.setServers([
+	'8.8.8.8',
+	'[2001:4860:4860::8888]',
+]);
+
 test('continuation-local state with MakeCallback and DNS module', function(t) {
 	t.plan(11);
 
-	var namespace = createNamespace('dns');
+	const namespace = createNamespace('dns');
 	namespace.run(function() {
 		namespace.set('test', 0xabad1dea);
 

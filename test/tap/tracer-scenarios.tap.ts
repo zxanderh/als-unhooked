@@ -5,24 +5,24 @@ import { test } from 'tap';
 import als from 'als-unhooked/legacy';
 
 let nextID = 1;
-function fresh(name) {
-	assert.ok(!als.getNamespace(name), 'namespace ' + name + ' already exists');
+function fresh(name: string) {
+	assert.ok(!als.getNamespace(name), `namespace '${name}' already exists`);
 	return als.createNamespace(name);
 }
 
-function destroy(name) {
+function destroy(name: string) {
 	return function destroyer(t) {
 		als.destroyNamespace(name);
-		assert.ok(!als.getNamespace(name), "namespace '" + name + "' should no longer exist");
+		assert.ok(!als.getNamespace(name), `namespace '${name}' should no longer exist`);
 		t.end();
 	};
 }
 
-function runInTransaction(name, fn) {
-	const namespace = als.getNamespace(name);
-	assert(namespace, 'namespaces ' + name + " doesn't exist");
+function runInTransaction(name: string, fn: () => any) {
+	const namespace = als.getNamespace<{ transaction: number }>(name);
+	assert(namespace, `namespaces '${name}' doesn't exist`);
 
-	const context = namespace.createContext();
+	const context = namespace.createContext<{ transaction: number }>();
 	context.transaction = ++nextID;
 	process.nextTick(namespace.bind(fn, context));
 }
@@ -33,7 +33,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('a. async transaction with setTimeout', function(t) {
 		t.plan(2);
 
-		const namespace = fresh('a', this);
+		const namespace = fresh('a');
 
 		function handler() {
 			t.ok(namespace.get('transaction'), 'transaction should be visible');
@@ -48,7 +48,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('b. async transaction with setInterval', function(t) {
 		t.plan(4);
 
-		const namespace = fresh('b', this);
+		const namespace = fresh('b');
 		let count     = 0
 			, handle
       ;
@@ -68,7 +68,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('c. async transaction with process.nextTick', function(t) {
 		t.plan(2);
 
-		const namespace = fresh('c', this);
+		const namespace = fresh('c');
 
 		function handler() {
 			t.ok(namespace.get('transaction'), 'transaction should be visible');
@@ -83,7 +83,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('d. async transaction with EventEmitter.emit', function(t) {
 		t.plan(2);
 
-		const namespace = fresh('d', this);
+		const namespace = fresh('d');
 		const ee = new EventEmitter();
 
 		function handler() {
@@ -102,7 +102,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('e. two overlapping async transactions with setTimeout', function(t) {
 		t.plan(6);
 
-		const namespace = fresh('e', this);
+		const namespace = fresh('e');
 		let first
 			, second
       ;
@@ -132,7 +132,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('f. two overlapping async transactions with setInterval', function(t) {
 		t.plan(15);
 
-		const namespace = fresh('f', this);
+		const namespace = fresh('f');
 
 		function runInterval() {
 			let count = 0;
@@ -164,12 +164,12 @@ test('asynchronous state propagation', function(t) {
 	t.test('g. two overlapping async transactions with process.nextTick', function(t) {
 		t.plan(6);
 
-		const namespace = fresh('g', this);
+		const namespace = fresh('g');
 		let first;
 		let second;
 
 		function handler(id) {
-			var transaction = namespace.get('transaction');
+			const transaction = namespace.get('transaction');
 			t.ok(transaction, 'transaction should be visible');
 			t.equal(transaction, id, 'transaction matches');
 		}
@@ -194,7 +194,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('h. two overlapping async runs with EventEmitter.prototype.emit', function(t) {
 		t.plan(3);
 
-		const namespace = fresh('h', this);
+		const namespace = fresh('h');
 		const ee = new EventEmitter();
 
 		function handler() {
@@ -216,7 +216,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('i. async transaction with an async sub-call with setTimeout', function(t) {
 		t.plan(5);
 
-		var namespace = fresh('i', this);
+		const namespace = fresh('i');
 
 		function inner(callback) {
 			setTimeout(function() {
@@ -244,7 +244,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('j. async transaction with an async sub-call with setInterval', function(t) {
 		t.plan(5);
 
-		const namespace = fresh('j', this);
+		const namespace = fresh('j');
 		let outerHandle;
 		let innerHandle;
 
@@ -276,7 +276,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('k. async transaction with an async call with process.nextTick', function(t) {
 		t.plan(5);
 
-		const namespace = fresh('k', this);
+		const namespace = fresh('k');
 
 		function inner(callback) {
 			process.nextTick(function() {
@@ -304,7 +304,7 @@ test('asynchronous state propagation', function(t) {
 	t.test('l. async transaction with an async call with EventEmitter.emit', function(t) {
 		t.plan(4);
 
-		const namespace = fresh('l', this);
+		const namespace = fresh('l');
 		const outer = new EventEmitter();
 		const inner = new EventEmitter();
 

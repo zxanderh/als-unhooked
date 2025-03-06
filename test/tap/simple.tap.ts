@@ -10,7 +10,9 @@ import als from 'als-unhooked/legacy';
 const tracer = als.createNamespace('tracer');
 
 class Trace {
-	constructor(harvester) {
+	harvester: EventEmitter;
+
+	constructor(harvester: EventEmitter) {
 		this.harvester = harvester;
 	}
 

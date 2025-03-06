@@ -6,9 +6,9 @@ import domain from 'domain';
 
 test('continuation-local storage glue with a throw in the continuation chain',
 	function(t) {
-		var namespace = als.createNamespace('test');
+		const namespace = als.createNamespace('test');
 		namespace.run(function() {
-			var d = domain.create();
+			const d = domain.create();
 			namespace.set('outer', true);
 
 			d.on('error', function(blerg) {
@@ -37,7 +37,7 @@ test('continuation-local storage glue with a throw in the continuation chain',
 test('synchronous throw attaches the context', function(t) {
 	t.plan(3);
 
-	var namespace = als.createNamespace('cls@synchronous');
+	const namespace = als.createNamespace('cls@synchronous');
 	namespace.run(function() {
 		namespace.set('value', 'transaction clear');
 		try {
@@ -61,7 +61,7 @@ test('synchronous throw attaches the context', function(t) {
 test('synchronous throw checks if error exists', function(t) {
 	t.plan(2);
 
-	var namespace = als.createNamespace('cls@synchronous-null-error');
+	const namespace = als.createNamespace('cls@synchronous-null-error');
 	namespace.run(function() {
 		namespace.set('value', 'transaction clear');
 		try {
@@ -70,8 +70,8 @@ test('synchronous throw checks if error exists', function(t) {
 				throw null;
 			});
 		}
-		// eslint-disable-next-line no-unused-vars
-		catch (e) {
+
+		catch {
 			// as we had a null error, cls couldn't set the new inner value
 			t.equal(namespace.get('value'), 'transaction clear', 'from outer value');
 		}
@@ -85,9 +85,9 @@ test('synchronous throw checks if error exists', function(t) {
 test('throw in process.nextTick attaches the context', function(t) {
 	t.plan(3);
 
-	var namespace = als.createNamespace('cls@nexttick2');
+	const namespace = als.createNamespace('cls@nexttick2');
 
-	var d = domain.create();
+	const d = domain.create();
 	d.once('error', function(e) {
 		t.ok(namespace.fromException(e), 'context was attached to error');
 		t.equal(namespace.fromException(e)['value'], 'transaction set',
@@ -114,8 +114,8 @@ test('throw in process.nextTick attaches the context', function(t) {
 test('throw in setTimeout attaches the context', function(t) {
 	t.plan(3);
 
-	var namespace = als.createNamespace('cls@nexttick3');
-	var d = domain.create();
+	const namespace = als.createNamespace('cls@nexttick3');
+	const d = domain.create();
 
 	d.once('error', function(e) {
 		t.ok(namespace.fromException(e), 'context was attached to error');

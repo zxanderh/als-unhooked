@@ -6,11 +6,11 @@ import { createNamespace } from 'als-unhooked/legacy';
 test('continuation-local state with net connection', function(t) {
 	t.plan(4);
 
-	var namespace = createNamespace('net');
+	const namespace = createNamespace('net');
 	namespace.run(function() {
 		namespace.set('test', 'originalValue');
 
-		var server;
+		let server;
 		namespace.run(function() {
 			namespace.set('test', 'newContextValue');
 
@@ -24,10 +24,10 @@ test('continuation-local state with net connection', function(t) {
 				});
 			});
 			server.listen(function() {
-				var address = server.address();
+				const address = server.address();
 				namespace.run(function() {
 					namespace.set('test', 'MONKEY');
-					var client = net.connect(address.port, function() {
+					const client = net.connect(address.port, function() {
 						t.equal(namespace.get('test'), 'MONKEY', 'state preserved for client connection');
 						client.write('Hello');
 						client.on('data', function() {

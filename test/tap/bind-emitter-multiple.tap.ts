@@ -10,9 +10,9 @@ test('event emitters bound to CLS context', function(t) {
 	t.test('emitter bound to multiple namespaces handles them correctly', function(t) {
 		t.plan(6);
 
-		var ee = new EventEmitter();
-		var ns1 = als.createNamespace('1');
-		var ns2 = als.createNamespace('2');
+		const ee = new EventEmitter();
+		const ns1 = als.createNamespace('1');
+		const ns2 = als.createNamespace('2');
 
 		// emulate an incoming data emitter
 		setTimeout(function() {

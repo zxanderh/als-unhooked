@@ -29,6 +29,8 @@ try {
  * @param {string} name - The name of the namespace.
  * @returns {Namespace} The created namespace.
  */
+export function createNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
+export function createNamespace<K = any, V = any>(name: string): Namespace<K, V>;
 export function createNamespace(name: string) {
 	d('createNamespace', name);
 	return new Namespace(name);
@@ -39,6 +41,8 @@ export function createNamespace(name: string) {
  * @param {string} name - The name of the namespace.
  * @returns {Namespace | undefined} The namespace if found, otherwise undefined.
  */
+export function getNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
+export function getNamespace<K = any, V = any>(name: string): Namespace<K, V>;
 export function getNamespace(name: string) {
 	d('getNamespace', name);
 	return namespaces[name];
@@ -49,6 +53,8 @@ export function getNamespace(name: string) {
  * @param {string} name - The name of the namespace.
  * @returns {Namespace} The retrieved or created namespace.
  */
+export function getOrCreateNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
+export function getOrCreateNamespace<K = any, V = any>(name: string): Namespace<K, V>;
 export function getOrCreateNamespace(name: string) {
 	d('getOrCreateNamespace', name);
 	return namespaces[name] || createNamespace(name);
@@ -58,7 +64,7 @@ export function getOrCreateNamespace(name: string) {
  * Destroys a namespace.
  * @param {string | Namespace} namespace - The namespace to destroy.
  */
-export function destroyNamespace(namespace: string | Namespace) {
+export function destroyNamespace(namespace: string | Namespace): void {
 	if (typeof namespace !== 'string') {
 		assert.ok(namespace instanceof Namespace, '"namespace" param should be string or instanceof Namespace');
 		namespace = namespace.name;
@@ -73,12 +79,23 @@ export function destroyNamespace(namespace: string | Namespace) {
 /**
  * Destroys all namespaces.
  */
-export function reset() {
+export function reset(): void {
 	d('reset');
 	Object.keys(namespaces).forEach((name) => {
 		destroyNamespace(namespaces[name]);
 	});
 }
+
+type Modify<T, R> = Omit<T, keyof R> & R;
+type WrappedEmitterFn<T extends (this: EventEmitter<any>, ...rgs) => any> = T & { __wrapped: true };
+export type WrappedEmitter<T extends EventEmitter> = Modify<T, {
+	on: WrappedEmitterFn<T['on']>;
+	once: WrappedEmitterFn<T['once']>;
+	addListener: WrappedEmitterFn<T['addListener']>;
+	removeListener: WrappedEmitterFn<T['removeListener']>;
+	emit: WrappedEmitterFn<T['emit']>;
+	_events: Record<string, Record<string, any>>;
+}>;
 
 export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	name: string;
@@ -134,8 +151,10 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 		}
 	}
 
+	createStore(): Record<K extends PropertyKey ? K : never, V>;
+	createStore<T extends Dictionary<K, V>>(defaults: T): T;
 	createStore<T extends Dictionary<K, V>>(defaults?: T) {
-		const context = isMapLike(defaults) ? new Map(defaults.entries()) : defaults ? Object.create(defaults) as T : {} as Dictionary<K, V>;
+		const context = isMapLike(defaults) ? new Map(defaults.entries()) : defaults ? Object.create(defaults) as T : {} as Record<K extends PropertyKey ? K : never, V>;
 		return context;
 	}
 
@@ -143,10 +162,10 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	 * Creates a new context. This is primarily an internal utility, and shouldn't need to be called directly.
 	 * @returns The created context.
 	 */
-	createContext() {
-		const store = this.getStore();
+	createContext<T extends Dictionary<K, V>>(): T {
+		const store = this.getStore() as T;
 		// Prototype inherit existing context if created a new child context within existing context.
-		const context = this.createStore(store);
+		const context = this.createStore<T>(store);
 		set(context, '_ns_name' as K, this.name as V);
 		d(`${this.indentStr}CONTEXT-CREATED Context: (${this.name}) context:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
 		return context;
@@ -154,19 +173,19 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 
 	/**
 	 * Runs a function within the current context.
-	 * @param {() => unknown} fn - The function to run.
-	 * @returns {T} The current context.
+	 * @param fn - The function to run.
+	 * @returns The current context.
 	 */
-	run<T = any>(fn: () => unknown) {
+	run<T = any>(fn: (ctx?: T) => unknown) {
 		return this._run(fn).context as T;
 	}
 
 	/**
 	 * Runs a function within the current context and returns its result.
-	 * @param {() => T} fn - The function to run.
-	 * @returns {T} The result of the function.
+	 * @param fn - The function to run.
+	 * @returns The result of the function.
 	 */
-	runAndReturn<T>(fn: () => T) {
+	runAndReturn<T>(fn: (ctx?: T) => T) {
 		return this._run(fn).returnValue as T;
 	}
 
@@ -274,7 +293,7 @@ import { AsyncLocalStorage } from 'async_hooks';
 	 * ```
 	 * @param {EventEmitter} emitter - The EventEmitter to bind.
 	 */
-	bindEmitter(emitter: EventEmitter) {
+	bindEmitter(emitter: EventEmitter): emitter is WrappedEmitter<typeof emitter> {
 		assert(wrapEmitter, 'optional dependency "emitter-listener" must be installed to use Namespace#bindEmitter()!');
 		// @ts-ignore
 		assert(emitter.on && emitter.addListener && emitter.emit, 'can only bind real EEs');
@@ -313,6 +332,7 @@ import { AsyncLocalStorage } from 'async_hooks';
 		}
 
 		wrapEmitter(emitter, attach, bind);
+		return true;
 	}
 
 	/**
@@ -340,7 +360,7 @@ export default {
 declare global {
   namespace NodeJS {
     interface Process {
-      namespaces?: Record<string, Namespace>;
+      namespaces: Record<string, Namespace>;
     }
   }
 }

@@ -5,7 +5,7 @@ import { createNamespace } from 'als-unhooked/legacy';
 test('continuation-local state with promises', function(t) {
 	t.plan(4);
 
-	var namespace = createNamespace('namespace');
+	const namespace = createNamespace('namespace');
 	namespace.run(function() {
 		namespace.set('test', 0xabad1dea);
 
@@ -94,7 +94,7 @@ test('continuation-local state with promises', function(t) {
 				namespace.set('test', 10101);
 				t.equal(namespace.get('test'), 10101, 'state has been mutated');
 
-				var promise = Promise.resolve();
+				const promise = Promise.resolve();
 
 				promise
 					.then(function() {

@@ -6,7 +6,7 @@ import { createNamespace } from 'als-unhooked/legacy';
 test('continuation-local state with timers', function(t) {
 	t.plan(4);
 
-	var namespace = createNamespace('namespace');
+	const namespace = createNamespace('namespace');
 	namespace.run(function() {
 		namespace.set('test', 0xabad1dea);
 
@@ -61,7 +61,7 @@ test('continuation-local state with timers', function(t) {
 				t.equal(namespace.get('test'), 10101,
 					'continuation-local state has been mutated');
 
-				var ref = setInterval(function() {
+				const ref = setInterval(function() {
 					t.equal(namespace.get('test'), 10101,
 						"mutated state has persisted to setInterval's callback");
 

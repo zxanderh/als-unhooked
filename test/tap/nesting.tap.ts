@@ -6,7 +6,7 @@ import als from 'als-unhooked/legacy';
 test('nested contexts on a single namespace', function(t) {
 	t.plan(7);
 
-	var namespace = als.createNamespace('namespace');
+	const namespace = als.createNamespace('namespace');
 	namespace.run(function() {
 		namespace.set('value', 1);
 
@@ -33,7 +33,7 @@ test('nested contexts on a single namespace', function(t) {
 });
 
 test('the example from the docs', function(t) {
-	var ns = als.createNamespace('writer');
+	const ns = als.createNamespace('writer');
 	ns.run(function() {
 		ns.set('value', 0);
 
