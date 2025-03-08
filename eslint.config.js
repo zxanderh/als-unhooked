@@ -24,6 +24,10 @@ export default [
 			'@typescript-eslint/no-unused-expressions': ['error', {
 				allowTernary: true,
 			}],
+			'@typescript-eslint/no-unused-vars': ['error', {
+				varsIgnorePattern: '^_.*?',
+				argsIgnorePattern: '^_.*?',
+			}],
 			'@typescript-eslint/ban-ts-comment': [
 				'error',
 				{

@@ -1,19 +1,29 @@
 
 # Asynchronous Local Storage ( UN-Hooked )
 
-### This is a fork of [cls-hooked](https://github.com/jeff-lewis/cls-hooked) using [AsyncLocalStorage](https://nodejs.org/api/async_context.html#class-asynclocalstorage) instead of [async_hooks](https://github.com/nodejs/node/blob/master/doc/api/async_hooks.md).
+### This is a fork of [cls-hooked](cls) using [AsyncLocalStorage](AsyncLocalStorage) instead of [async_hooks](ah).
 
-Since the Node team now discourages the use of [async_hooks](https://github.com/nodejs/node/blob/master/doc/api/async_hooks.md),
+Since the Node team now discourages the use of [async_hooks](ah),
 this package aims to provide a drop-in replacement for cls-hooked using async_hooks successor,
-the [AsyncLocalStorage](https://nodejs.org/api/async_context.html#class-asynclocalstorage) API
-(which is officially stable, by the way).
+the [AsyncLocalStorage](AsyncLocalStorage) API (which is officially stable, by the way).
+
+### Modern vs Legacy
+> **TL;DR** If you're using [sequelize v6](v6) or just want a nice AsyncLocalStorage implementation,
+> use the modern API. If you need a drop-in replacement for cls-hooked for use with something
+> other than sequelize, you probably want the Legacy API.
+
+The package has 2 different APIs: modern and legacy. The legacy API is a total drop-in replacement
+for [cls-hooked](cls-hooked). In accomplishing this, it creates alot of additional overhead,
+relies on globals, and (optionally) utilizes [monkeypatching](emitter-listener). To eliminate these,
+a minimal wrapper of AsyncLocalStorage was created to be
+  1. Easy to use
+  2. Compatible with sequelize
 
 ### Use with Sequelize (v6)
-A major motivator in creating this package was for use with [sequelize v6](https://github.com/sequelize/sequelize/tree/v6),
-which uses cls-hooked for [automatic transaction passing](https://sequelize.org/docs/v6/other-topics/transactions/#automatically-pass-transactions-to-all-queries).
+A major motivator in creating this package was for use with [sequelize v6](v6),
+which uses cls-hooked for [automatic transaction passing](autotxn).
 This package is not officially supported by sequelize at this time, but the modern API
 has been designed to be compatible with sequelize's implementation of cls-hooked.
-
 ```javascript
 // app.js
 
@@ -23,84 +33,66 @@ import { ALS } from 'als-unhooked';
 Sequelize.useCLS(new ALS());
 ```
 
-### Thanks to [@jeff-lewis](https://github.com/jeff-lewis) for [cls-hooked](https://github.com/jeff-lewis/cls-hooked), and to the many others who have contributed to async context tracking in node over the years.
+The legacy API is, of course, also compatible with sequelize. But the modern API is
+recommended as it is more performant.
 
 ---
-Continuation-local storage works like thread-local storage in threaded
-programming, but is based on chains of Node-style callbacks instead of threads.
-The standard Node convention of functions calling functions is very similar to
-something called ["continuation-passing style"][cps] in functional programming,
-and the name comes from the way this module allows you to set and get values
-that are scoped to the lifetime of these chains of function calls.
+### Overview
 
-Suppose you're writing a module that fetches a user and adds it to a session
-before calling a function passed in by a user to continue execution:
+`AsyncLocalStorage` is similar to thread-local storage in other programming environments. It allows you to store data that is scoped to the lifetime of an asynchronous operation, making it possible to maintain context across various asynchronous calls. This is particularly useful in scenarios where you need to track request-specific data throughout the lifecycle of a request in a web server, such as user authentication details or request IDs.
+
+Suppose you use middleware to authenticate your requests:
 
 ```javascript
-// setup.js
+// auth.js
 
 import als from 'als-unhooked';
 import db from './lib/db.js';
 
-function start(options, next) {
-  db.fetchUserById(options.id, function (error, user) {
-    if (error) return next(error);
-
-    als.set('user', user);
-
-    next();
-  });
-}
+// auth middleware
+const auth = async (req, res, next) => {
+  const user = await db.getUserFromReq(req);
+	als.set('user', user);
+  next();
+};
 ```
 
-Later on in the process of turning that user's data into an HTML page, you call
-another function (maybe defined in another module entirely) that wants to fetch
-the value you set earlier:
+Throughout the lifetime of the request, data may be passed to dozens of
+functions across several files, creating database records along the way.
+You would probably like to keep track of who is creating those records. You
+could pass the user object into every single function. Or, with als...
 
 ```javascript
-// send_response.js
+// thing.module.js
 
 import als from 'als-unhooked';
-import render from './lib/render.js';
+import db from './lib/db.js';
 
-function finish(response) {
-  const user = als.get('user');
-  render({user: user}).pipe(response);
+async function createThing(_thing) {
+  _thing.createdBy = als.get('user').id;
+  await db.thing.create(_thing);
 }
 ```
 
 When you set values in AsyncLocalStorage, those values are accessible
 until all functions called from the original function – synchronously or
-asynchronously – have finished executing. This includes callbacks passed to
-`process.nextTick` and the [timer functions][] ([setImmediate][],
-[setTimeout][], and [setInterval][]), as well as callbacks passed to
-asynchronous functions that call native functions (such as those exported from
-the `fs`, `dns`, `zlib` and `crypto` modules).
+asynchronously – have finished executing. This includes callbacks and
+promise handlers.
 
-A simple rule of thumb is anywhere where you might have set a property on the
-`request` or `response` objects in an HTTP handler, you can (and should) now
-use AsyncLocalStorage. This API is designed to allow you extend the
-scope of a variable across a sequence of function calls, but with values
-specific to each sequence of calls.
+## Documentation
 
-While cls-hooked used namespaces, als-unhooked relies on instances of the ALS
-class. Most will not have need for multiple instances, though, so a default
-instance is bound to the ALS class itself as static methods for convenience.
+Coming Soon
 
-One difference in the main implementation is that, unlike cls-hooked, nested
-calls to als.run() do not automatically inherit their parent context. You can
-easily remedy this by passing als.getStore() as the second argument to als.run().
-
-## ToDo
- - detailed documentation
-
-# copyright & license
+## Copyright & License
 
 See [LICENSE](https://github.com/zxanderh/als-unhooked/blob/main/LICENSE)
 for the details of the BSD 2-clause "simplified" license used by `als-unhooked`.
 
-[timer functions]: https://nodejs.org/api/timers.html
-[setImmediate]:    https://nodejs.org/api/timers.html#timers_setimmediate_callback_arg
-[setTimeout]:      https://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg
-[setInterval]:     https://nodejs.org/api/timers.html#timers_setinterval_callback_delay_arg
-[cps]:             http://en.wikipedia.org/wiki/Continuation-passing_style
+### Thanks to [@jeff-lewis](https://github.com/jeff-lewis) for [cls-hooked](cls), and to the many others who have contributed to async context tracking in node over the years.
+
+[v6]:                https://github.com/sequelize/sequelize/tree/v6
+[AsyncLocalStorage]: https://nodejs.org/api/async_context.html#class-asynclocalstorage
+[ah]:                https://github.com/nodejs/node/blob/master/doc/api/async_hooks.md
+[autotxn]:           https://sequelize.org/docs/v6/other-topics/transactions/#automatically-pass-transactions-to-all-queries
+[cls]:               https://github.com/jeff-lewis/cls-hooked
+[emitter-listener]:  https://github.com/othiym23/emitter-listener

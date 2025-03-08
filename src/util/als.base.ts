@@ -1,21 +1,18 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import { Dictionary, entries, generateCodename, get, noop, set } from './util/_common.js';
+import { Dictionary, generateCodename, get, noop, set } from './_common.js';
 import debug from 'debug';
-import { ALSBase } from './util/als.base.js';
 const d = debug('als:ALS');
 // ToDo: debugging
 
-export class ALS<K = any, V = any> extends ALSBase<K, V, Map<K, V>> {
+export abstract class ALSBase<K, V, S extends Dictionary<K, V>> {
 	protected d = d.enabled ? d.extend(generateCodename()) : noop;
+	protected asyncLocalStorage: AsyncLocalStorage<S>;
 
 	constructor() {
-		super();
-		this.d('constructor');
+		this.asyncLocalStorage = new AsyncLocalStorage();
 	}
 
-	protected createStore(defaults?: Dictionary<K, V>) {
-		return new Map(entries(defaults));
-	}
+	protected abstract createStore(defaults?: Dictionary<K, V>): S;
 
 	/**
 	 * Retrieves the current store.
@@ -60,8 +57,7 @@ export class ALS<K = any, V = any> extends ALSBase<K, V, Map<K, V>> {
 
 	/**
 	 * Exits the current store context and runs a function.
-	 * @experimental depends on {@link AsyncLocalStorage#exit}
-	 *
+	 * @experimental
 	 * @param fn - The function to run.
 	 * @returns The result of the function.
 	 */
@@ -71,8 +67,7 @@ export class ALS<K = any, V = any> extends ALSBase<K, V, Map<K, V>> {
 
 	/**
 	 * Binds a function to the current store context.
-	 * @experimental depends on {@link AsyncLocalStorage#bind}
-	 *
+	 * @experimental
 	 * @param fn - The function to bind.
 	 * @returns The bound function.
 	 */
@@ -82,8 +77,7 @@ export class ALS<K = any, V = any> extends ALSBase<K, V, Map<K, V>> {
 
 	/**
 	 * Enters a new store context with the given default values.
-	 * @experimental depends on {@link AsyncLocalStorage#enterWith}
-	 *
+	 * @experimental
 	 * @param defaults - The default values to initialize the store with.
 	 */
 	enterWith(defaults?: Dictionary<K, V>) {
@@ -91,5 +85,3 @@ export class ALS<K = any, V = any> extends ALSBase<K, V, Map<K, V>> {
 		return this.asyncLocalStorage.enterWith(store);
 	}
 }
-
-export default ALS;
