@@ -1,9 +1,9 @@
 import debug from 'debug';
 import assert from 'node:assert';
 import util from 'node:util';
-import ALS from './als.js';
 import type EventEmitter from 'node:events';
-import { Dictionary, get, isMapLike, MapLike, set } from './_common.js';
+import { Dictionary, get, isMapLike, MapLike, noop, set } from './util/_common.js';
+import { ALSBase } from './util/als.base.js';
 const d = debug('als:legacy');
 
 // "symbols" remain as strings for backwards-compatibility with cls-hooked
@@ -28,6 +28,9 @@ try {
  * Creates a new namespace.
  * @param {string} name - The name of the namespace.
  * @returns {Namespace} The created namespace.
+ *
+ * @example
+ * const ns = createNamespace('myNamespace');
  */
 export function createNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
 export function createNamespace<K = any, V = any>(name: string): Namespace<K, V>;
@@ -40,6 +43,9 @@ export function createNamespace(name: string) {
  * Retrieves an existing namespace by name.
  * @param {string} name - The name of the namespace.
  * @returns {Namespace | undefined} The namespace if found, otherwise undefined.
+ *
+ * @example
+ * const ns = getNamespace('myNamespace');
  */
 export function getNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
 export function getNamespace<K = any, V = any>(name: string): Namespace<K, V>;
@@ -52,6 +58,9 @@ export function getNamespace(name: string) {
  * Retrieves an existing namespace by name or creates a new one if it doesn't exist.
  * @param {string} name - The name of the namespace.
  * @returns {Namespace} The retrieved or created namespace.
+ *
+ * @example
+ * const ns = getOrCreateNamespace('myNamespace');
  */
 export function getOrCreateNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
 export function getOrCreateNamespace<K = any, V = any>(name: string): Namespace<K, V>;
@@ -63,6 +72,9 @@ export function getOrCreateNamespace(name: string) {
 /**
  * Destroys a namespace.
  * @param {string | Namespace} namespace - The namespace to destroy.
+ *
+ * @example
+ * destroyNamespace('myNamespace');
  */
 export function destroyNamespace(namespace: string | Namespace): void {
 	if (typeof namespace !== 'string') {
@@ -78,6 +90,9 @@ export function destroyNamespace(namespace: string | Namespace): void {
 
 /**
  * Destroys all namespaces.
+ *
+ * @example
+ * reset();
  */
 export function reset(): void {
 	d('reset');
@@ -97,7 +112,7 @@ export type WrappedEmitter<T extends EventEmitter> = Modify<T, {
 	_events: Record<string, Record<string, any>>;
 }>;
 
-export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
+export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>> {
 	name: string;
 	private _indent = 0;
 
@@ -111,6 +126,7 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 		super();
 		namespaces[name] = this;
 		this.name = name;
+		this.d = d.enabled ? d.extend(name) : noop;
 		this._indent = 0;
 	}
 
@@ -133,6 +149,9 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	 * Retrieves a value from the current context.
 	 * @param key - The key to retrieve.
 	 * @returns The value if found, otherwise undefined.
+	 *
+	 * @example
+	 * const value = ns.get('key');
 	 */
 	get<T extends V = V>(key: K) {
 		const store = this.getStore() as unknown as MapLike<K, T>;
@@ -143,6 +162,9 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	 * Sets a value in the current context.
 	 * @param key - The key to set.
 	 * @param value - The value to set.
+	 *
+	 * @example
+	 * ns.set('key', 'value');
 	 */
 	set<T extends V = V>(key: K, value: T) {
 		const store = this.getStore();
@@ -175,6 +197,11 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	 * Runs a function within the current context.
 	 * @param fn - The function to run.
 	 * @returns The current context.
+	 *
+	 * @example
+	 * ns.run(() => {
+	 *   // code to run within the context
+	 * });
 	 */
 	run<T = any>(fn: (ctx?: T) => unknown) {
 		return this._run(fn).context as T;
@@ -184,6 +211,12 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	 * Runs a function within the current context and returns its result.
 	 * @param fn - The function to run.
 	 * @returns The result of the function.
+	 *
+	 * @example
+	 * const result = ns.runAndReturn(() => {
+	 *   // code to run within the context
+	 *   return 'result';
+	 * });
 	 */
 	runAndReturn<T>(fn: (ctx?: T) => T) {
 		return this._run(fn).returnValue as T;
@@ -214,6 +247,11 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	 * Runs a function that returns a promise within the current context. Assumes the Promise is als friendly or already wrapped.
 	 * @param {(ctx: any) => Promise<T>} fn - The function to run.
 	 * @returns {Promise<T>} The promise returned by the function.
+	 *
+	 * @example
+	 * ns.runPromise(async () => {
+	 *   // async code to run within the context
+	 * });
 	 */
 	runPromise<T>(fn: (ctx: any) => Promise<T>): Promise<T> {
 		const context = this.createContext();
@@ -243,6 +281,12 @@ export class Namespace<K = any, V = any> extends ALS<K, V, Dictionary<K, V>> {
 	 * @param fn - The function to bind.
 	 * @param [context] - The context to bind to.
 	 * @returns The bound function.
+	 *
+	 * @example
+	 * const boundFn = ns.bind(() => {
+	 *   // code to run within the context
+	 * });
+	 * boundFn();
 	 */
 	bind<T extends () => any>(fn: T, context?: Dictionary<K, V>): T {
 		if (!context) {
@@ -281,17 +325,10 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 	/**
 	 * Binds an EventEmitter to the current context.
-	 * @experimental
-	 * @deprecated bindEmitter is kept around for backwards compatibility only. For better ways of handling EventEmitters,
-	 * see [Integrating AsyncResource with EventEmitter](https://nodejs.org/api/async_context.html#integrating-asyncresource-with-eventemitter).
-	 * The example is for AsyncResource, but the same concept applies. For instance,
-	 * ```js
-	 * namespace.set('foo', 'bar');
-	 * req.on('close', namespace.bind(() => {
-	 * 		namespace.get('foo');	// returns 'bar'
-	 * }));
-	 * ```
 	 * @param {EventEmitter} emitter - The EventEmitter to bind.
+	 *
+	 * @example
+	 * ns.bindEmitter(emitter);
 	 */
 	bindEmitter(emitter: EventEmitter): emitter is WrappedEmitter<typeof emitter> {
 		assert(wrapEmitter, 'optional dependency "emitter-listener" must be installed to use Namespace#bindEmitter()!');
@@ -339,6 +376,9 @@ import { AsyncLocalStorage } from 'async_hooks';
 	 * Retrieves the context from an exception.
 	 * @param {Error} exception - The exception to retrieve the context from.
 	 * @returns {any} The context.
+	 *
+	 * @example
+	 * const context = ns.fromException(error);
 	 */
 	fromException(exception: Error) {
 		return exception[ERROR_SYMBOL];

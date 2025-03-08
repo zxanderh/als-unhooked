@@ -1,6 +1,8 @@
 import ALS from './als.js';
 
-const als = ALS as (typeof ALS & ALS);
+export type ALSGlobal = typeof ALS & ALS;
+
+const als = ALS as ALSGlobal;
 
 const defaultInstance = new ALS();
 Reflect.ownKeys(ALS.prototype).filter(k => k !== 'constructor').forEach((key) => {
@@ -12,4 +14,4 @@ export { als as ALS };
 export default als;
 export {
 	MapLike,
-} from './_common.js';
+} from './util/_common.js';
