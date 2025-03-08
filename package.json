@@ -27,7 +27,7 @@
 		"doc": "typedoc src/legacy.ts src/als.ts src/index.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
     "lint": "eslint .",
-    "prepublish": "eslint . --fix"
+    "prepublish": "eslint . --fix --ignore-pattern=docs/"
   },
   "repository": {
     "type": "git",
