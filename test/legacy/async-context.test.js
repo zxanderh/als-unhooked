@@ -1,7 +1,7 @@
 'use strict';
 
 import { expect } from 'chai';
-import cls from '../../legacy.js';
+import cls from 'als-unhooked/legacy';
 
 describe('cls simple async local context', function() {
 

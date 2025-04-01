@@ -1,4 +1,9 @@
-import debug from 'debug';
+/**
+ * The Legacy API is a total drop-in replacement for [cls-hooked](https://github.com/jeff-lewis/cls-hooked).
+ * @module
+ */
+
+import debug, { Debugger } from 'debug';
 import assert from 'node:assert';
 import util from 'node:util';
 import type EventEmitter from 'node:events';
@@ -101,8 +106,14 @@ export function reset(): void {
 	});
 }
 
+/** @protected */
 type Modify<T, R> = Omit<T, keyof R> & R;
+/** @protected */
 type WrappedEmitterFn<T extends (this: EventEmitter<any>, ...rgs) => any> = T & { __wrapped: true };
+
+/**
+ * A utility type representing an EventEmitter that has been wrapped by {@link Namespace#bindEmitter}.
+ */
 export type WrappedEmitter<T extends EventEmitter> = Modify<T, {
 	on: WrappedEmitterFn<T['on']>;
 	once: WrappedEmitterFn<T['once']>;
@@ -112,8 +123,25 @@ export type WrappedEmitter<T extends EventEmitter> = Modify<T, {
 	_events: Record<string, Record<string, any>>;
 }>;
 
+/**
+ * The backbone of the [Legacy API]{@link "legacy"}, this class represents an object with the
+ * same interface as the namespace objects in [cls-hooked](https://github.com/jeff-lewis/cls-hooked),
+ * including getting/setting values and running functions in the context of the
+ * associated store.
+ *
+ * @template K - The type of keys used in the context.
+ * @template V - The type of values stored in the context.
+ *
+ * @example
+ * const ns = new Namespace('myNamespace');	// or createNamespace('myNamespace')
+ * ns.run(() => {
+ *   ns.set('key', 'value');
+ *   console.log(ns.get('key')); // Outputs: 'value'
+ * });
+ */
 export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>> {
 	name: string;
+	private d: Debugger;
 	private _indent = 0;
 
 	constructor(name: string) {
@@ -126,7 +154,7 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 		super();
 		namespaces[name] = this;
 		this.name = name;
-		this.d = d.enabled ? d.extend(name) : noop;
+		this.d = d.enabled ? d.extend(name) : noop as Debugger;
 		this._indent = 0;
 	}
 
@@ -141,7 +169,7 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 	get indentStr() { return ' '.repeat(this._indent < 0 ? 0 : this._indent); }
 
 	/**
-	 * @deprecated Included for backwards compatibility. Use {@link getStore}.
+	 * @deprecated Included for backwards compatibility. Use {@link Namespace#getStore}.
 	 */
 	get active() { return this.getStore(); }
 
@@ -173,6 +201,7 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 		}
 	}
 
+	/** @hidden */
 	createStore(): Record<K extends PropertyKey ? K : never, V>;
 	createStore<T extends Dictionary<K, V>>(defaults: T): T;
 	createStore<T extends Dictionary<K, V>>(defaults?: T) {
@@ -181,8 +210,24 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 	}
 
 	/**
-	 * Creates a new context. This is primarily an internal utility, and shouldn't need to be called directly.
+	 * Creates a new context copied from the currently active context.
+	 * Use this with {@link Namespace#bind}, if you want to have a fresh
+	 * context at invocation time, as opposed to binding time:
 	 * @returns The created context.
+	 *
+	 * @example
+	 * function doSomething(p) {
+   * 	console.log("%s = %s", p, ns.get(p));
+	 * }
+	 *
+	 * function bindLater(callback) {
+	 * 	return ns.bind(callback, ns.createContext());
+	 * }
+	 *
+	 * setInterval(function () {
+	 * 	var bound = bindLater(doSomething);
+	 * 	bound('test');
+	 * }, 100);
 	 */
 	createContext<T extends Dictionary<K, V>>(): T {
 		const store = this.getStore() as T;
@@ -313,7 +358,7 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 	 * and SHOULD NOT be called directly. Use the legacy API's `destroyNamespace()` instead, e.g.
 	 * ```js
 	 * import { createNamespace, destroyNamespace } from 'als-unhooked/legacy';
-import { AsyncLocalStorage } from 'async_hooks';
+	 * import { AsyncLocalStorage } from 'async_hooks';
 	 * const ns = createNamespace('foo');
 	 * // Do stuff ...
 	 * destroyNamespace('foo');
@@ -325,6 +370,10 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 	/**
 	 * Binds an EventEmitter to the current context.
+	 *
+	 * **NOTE**: This method will throw if the optional dependency
+	 * [emitter-listener](https://github.com/othiym23/emitter-listener) is not installed.
+	 *
 	 * @param {EventEmitter} emitter - The EventEmitter to bind.
 	 *
 	 * @example
@@ -370,6 +419,14 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 		wrapEmitter(emitter, attach, bind);
 		return true;
+	}
+
+	/**
+	 * This function is intended for internal use only in the Legacy API.
+	 * @hidden
+	 */
+	protected enterWith(defaults?: Dictionary<K, V>) {
+		return super.enterWith(defaults);
 	}
 
 	/**

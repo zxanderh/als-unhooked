@@ -8,8 +8,7 @@
     "lib/*"
   ],
   "exports": {
-    ".": "./lib/index.js",
-    "./no-global": "./lib/als.js",
+    ".": "./lib/modern.js",
     "./legacy": "./lib/legacy.js"
   },
   "scripts": {

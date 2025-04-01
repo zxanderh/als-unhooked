@@ -1,11 +1,11 @@
-import { AsyncLocalStorage } from 'async_hooks';
-import { Dictionary, generateCodename, get, noop, set } from './_common.js';
-import debug from 'debug';
-const d = debug('als:ALS');
-// ToDo: debugging
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { Dictionary, get, set } from './_common.js';
 
+/**
+ * @protected
+ * A base class from which the modern and legacy APIs are both derived.
+ */
 export abstract class ALSBase<K, V, S extends Dictionary<K, V>> {
-	protected d = d.enabled ? d.extend(generateCodename()) : noop;
 	protected asyncLocalStorage: AsyncLocalStorage<S>;
 
 	constructor() {
@@ -45,28 +45,8 @@ export abstract class ALSBase<K, V, S extends Dictionary<K, V>> {
 	}
 
 	/**
-	 * Runs a function within a new store context.
-	 * @param fn - The function to run.
-	 * @param defaults - The default values to initialize the store with.
-	 * @returns The result of the function.
-	 */
-	run<T>(fn: () => T, defaults?: Dictionary<K, V>) {
-		const store = this.createStore(defaults);
-		return this.asyncLocalStorage.run<T>(store, fn);
-	}
-
-	/**
-	 * Exits the current store context and runs a function.
-	 * @experimental
-	 * @param fn - The function to run.
-	 * @returns The result of the function.
-	 */
-	exit<T>(fn: () => T) {
-		return this.asyncLocalStorage.exit(fn);
-	}
-
-	/**
 	 * Binds a function to the current store context.
+	 * Marked experimental as it depends on {@link AsyncLocalStorage.bind}
 	 * @experimental
 	 * @param fn - The function to bind.
 	 * @returns The bound function.
@@ -77,10 +57,11 @@ export abstract class ALSBase<K, V, S extends Dictionary<K, V>> {
 
 	/**
 	 * Enters a new store context with the given default values.
+	 * Marked experimental as it depends on {@link AsyncLocalStorage#enterWith}
 	 * @experimental
 	 * @param defaults - The default values to initialize the store with.
 	 */
-	enterWith(defaults?: Dictionary<K, V>) {
+	protected enterWith(defaults?: Dictionary<K, V>) {
 		const store = this.createStore(defaults);
 		return this.asyncLocalStorage.enterWith(store);
 	}
