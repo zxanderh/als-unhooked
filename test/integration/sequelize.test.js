@@ -1,7 +1,7 @@
 'use strict';
 
 import { expect } from 'chai';
-import Support from './support.js';
+import Support from '../support.js';
 import Sequelize from 'sequelize';
 import cls from 'als-unhooked/legacy';
 import { setTimeout as delay } from 'node:timers/promises';

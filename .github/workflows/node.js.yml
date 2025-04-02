@@ -28,7 +28,8 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run lint
-    - run: npm test
+    - run: npm run build
+    - run: npm run test:unit
 
   test:
     strategy:
@@ -36,9 +37,9 @@ jobs:
       matrix:
         image: [mysql:8.0]
         dialect: [mysql]
-        node-version: [20]
+        node-version: [22]
     name: Node ${{ matrix.node-version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     services:
       mysql:
         image: ${{ matrix.image }}
@@ -62,4 +63,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run lint
-      - run: npm test
+      - run: npm run build
+      - run: npm run test:intr
