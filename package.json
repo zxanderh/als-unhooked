@@ -25,8 +25,7 @@
     "----------------- UTIL -------------------------------------": "",
 		"doc": "typedoc src/legacy.ts src/als.ts src/index.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
-    "lint": "eslint .",
-    "prepublish": "eslint . --fix"
+    "lint": "eslint ./*.js src test lib"
   },
   "repository": {
     "type": "git",

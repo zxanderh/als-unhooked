@@ -69,9 +69,12 @@ export default [
 		},
 	},
 	{
-		files: ['**/*.js'],
+		files: ['**/*.js', '**/*.[mc]js'],
 		rules: {
-			'no-unused-vars': 'error',
+			'no-unused-vars': ['error', {
+				varsIgnorePattern: '^_.*?',
+				argsIgnorePattern: '^_.*?',
+			}],
 			'space-before-function-paren': [
 				'error',
 				{
