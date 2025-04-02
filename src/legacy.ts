@@ -124,7 +124,7 @@ export type WrappedEmitter<T extends EventEmitter> = Modify<T, {
 }>;
 
 /**
- * The backbone of the [Legacy API]{@link "legacy"}, this class represents an object with the
+ * The backbone of the {@link legacy Legacy API}, this class represents an object with the
  * same interface as the namespace objects in [cls-hooked](https://github.com/jeff-lewis/cls-hooked),
  * including getting/setting values and running functions in the context of the
  * associated store.
