@@ -2,7 +2,7 @@
   "name": "als-unhooked",
   "version": "0.1.0",
   "description": "cls-hooked replacement using modern context tracking",
-  "main": "./lib/index.js",
+  "main": "./lib/modern.js",
   "type": "module",
   "files": [
     "lib/*"
@@ -25,7 +25,7 @@
     "----------------- UTIL -------------------------------------": "",
     "doc": "typedoc --options ./typedoc.js src/modern.ts src/legacy.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
-    "lint": "eslint ./*.js src test lib"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
