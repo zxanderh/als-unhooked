@@ -23,7 +23,7 @@
     "test:mocha:legacy": "mocha test/legacy/*.js",
     "test:tap": "tap test/tap/*.tap.ts",
     "----------------- UTIL -------------------------------------": "",
-		"doc": "typedoc src/legacy.ts src/als.ts src/index.ts src/util/_common.ts",
+    "doc": "typedoc src/legacy.ts src/als.ts src/index.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
     "lint": "eslint ./*.js src test lib"
   },
@@ -49,8 +49,13 @@
   "dependencies": {
     "debug": "^4.4.0"
   },
-  "optionalDependencies": {
+  "peerDependencies": {
     "emitter-listener": "^1.1.2"
+  },
+  "peerDependenciesMeta": {
+    "emitter-listener": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
@@ -59,6 +64,7 @@
     "@types/superagent": "^8.1.9",
     "chai": "^5.2.0",
     "chai-as-promised": "^8.0.1",
+    "emitter-listener": "^1.1.2",
     "eslint": "^9.20.1",
     "eslint-plugin-mocha": "^10.5.0",
     "globals": "^15.15.0",
