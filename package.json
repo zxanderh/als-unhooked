@@ -23,7 +23,7 @@
     "test:mocha:legacy": "mocha test/legacy/*.js",
     "test:tap": "tap test/tap/*.tap.ts",
     "----------------- UTIL -------------------------------------": "",
-    "doc": "typedoc src/legacy.ts src/als.ts src/index.ts src/util/_common.ts",
+    "doc": "typedoc --options ./typedoc.js src/modern.ts src/legacy.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
     "lint": "eslint ./*.js src test lib"
   },
@@ -68,6 +68,8 @@
     "eslint": "^9.20.1",
     "eslint-plugin-mocha": "^10.5.0",
     "globals": "^15.15.0",
+    "jsdom": "^26.0.0",
+    "lodash.orderby": "^4.6.0",
     "mocha": "^11.1.0",
     "mysql2": "^3.12.0",
     "npm-run-all": "^4.1.5",
@@ -78,7 +80,9 @@
     "superagent": "^10.1.1",
     "tap": "^21.1.0",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.27.9",
+    "typedoc": "^0.28.1",
+    "typedoc-plugin-missing-exports": "^4.0.0",
+    "typedoc-plugin-rename-defaults": "^0.7.3",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.25.0"
   },

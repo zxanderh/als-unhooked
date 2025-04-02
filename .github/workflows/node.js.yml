@@ -5,7 +5,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main" ]
 
@@ -54,8 +54,8 @@ jobs:
       SEQ_PORT: 3310
       DIALECT: ${{ matrix.dialect }}
     steps:
-      - run: if [ "$(dpkg -l | awk '/mysql-client/ {print }'|wc -l)" -eq 0 ]; then apt update && apt install mysql-client -y; fi
-      - run: mysql --host 127.0.0.1 --port 3310 -uroot -psequelize_test -e "GRANT ALL ON *.* TO 'sequelize_test'@'%' with grant option; FLUSH PRIVILEGES;"
+      - run: if [ "$(dpkg -l | awk '/default-mysql-client/ {print }'|wc -l)" -eq 0 ]; then apt update && apt install default-mysql-client -y; fi
+      - run: mysql --default-auth=mysql_native_password --host 127.0.0.1 --port 3310 -uroot -psequelize_test -e "GRANT ALL ON *.* TO 'sequelize_test'@'%' with grant option; FLUSH PRIVILEGES;"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
