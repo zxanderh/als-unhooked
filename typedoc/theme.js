@@ -1,5 +1,5 @@
 // @ts-check
-import orderBy from 'lodash.orderby';
+import _ from 'lodash';
 import * as td from 'typedoc';
 
 export class CustomTheme extends td.DefaultTheme {
@@ -38,7 +38,7 @@ export class CustomTheme extends td.DefaultTheme {
 			});
 
 			// recursively sort
-			return orderBy(items, [orderFn, 'asc']).map(item => {
+			return _.orderBy(items, [orderFn, 'asc']).map(item => {
 				if (item.kind === td.ReflectionKind.Module) {
 					if (item.text === 'modern') {
 						item.text = 'Modern API';

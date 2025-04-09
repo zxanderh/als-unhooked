@@ -1,7 +1,7 @@
 // @ts-check
 import * as td from 'typedoc';
 const { ReflectionKind, ReflectionGroup, DeclarationReflection } = td;
-import orderBy from 'lodash.orderby';
+import _ from 'lodash';
 import { JSDOM } from 'jsdom';
 import { CustomTheme } from './theme.js';
 
@@ -41,7 +41,7 @@ export function load(app) {
 				() => true,
 			];
 			const orderFn = (x) => exprs.findIndex((fn) => fn(x));
-			const tmp = orderBy(model.children, [orderFn, 'asc']);
+			const tmp = _.orderBy(model.children, [orderFn, 'asc']);
 			model.children = tmp;
 		}
 	});
