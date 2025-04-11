@@ -32,7 +32,7 @@
     "----------------- BENCHMARK --------------------------------": "",
     "bench": "run-s bench:*",
     "bench:pre": "npm run build",
-    "bench:run": "node --expose-gc benchmark/_run.js",
+    "bench:run": "node --expose-gc benchmark/_exec.js",
     "----------------- UTIL -------------------------------------": "",
     "doc": "typedoc --options ./typedoc.js src/modern.ts src/legacy.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
