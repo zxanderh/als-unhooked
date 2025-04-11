@@ -95,6 +95,9 @@ export class ALSRetro extends ALS {
 		super();
 		this.name = name;
 	}
+
+	runAndReturn = ALSRetro.prototype.run.bind(this);
+	runPromise = ALSRetro.prototype.run.bind(this);
 }
 
 export const pkgs = {

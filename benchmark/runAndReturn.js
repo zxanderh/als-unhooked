@@ -16,7 +16,7 @@ const stats = await measure(async function* (state) {
 		[0]() { return cls.getNamespace(name); },
 
 		async bench(ns) {
-			await new Promise((resolve) => ns.run(resolve));
+			await new Promise((resolve) => ns.runAndReturn(resolve));
 		},
 	};
 }, options);

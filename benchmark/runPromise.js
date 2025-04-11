@@ -1,7 +1,7 @@
 'use strict';
 import { measure, $ } from 'mitata';
 import _ from 'lodash';
-import { getTargetPkg, optionsDefaults, pkgs, random } from './_util.js';
+import { getTargetPkg, nextTick, optionsDefaults, pkgs, random } from './_util.js';
 import chalk from 'chalk';
 import { isMainThread, parentPort, workerData } from 'node:worker_threads';
 
@@ -16,7 +16,7 @@ const stats = await measure(async function* (state) {
 		[0]() { return cls.getNamespace(name); },
 
 		async bench(ns) {
-			await new Promise((resolve) => ns.run(resolve));
+			await ns.runPromise(() => nextTick(() => {}));
 		},
 	};
 }, options);
