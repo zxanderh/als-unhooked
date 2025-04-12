@@ -5,7 +5,7 @@ const should = chai.should();
 
 import superagent from 'superagent';
 
-import { ALS } from 'als-unhooked';
+import ALS from 'als-unhooked/modern';
 import http from 'http';
 
 const keepAlive = process.env.KEEP_ALIVE !== '0';

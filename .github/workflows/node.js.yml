@@ -10,13 +10,36 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
+  unit:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run lint
+    - run: npm run build
+    - run: npm run test:unit
+
+  integration:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        image: [mysql:8.0]
+        dialect: [mysql]
+        node-version: [22]
     name: Node ${{ matrix.node-version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     services:
       mysql:
         image: mysql:8.0
@@ -32,12 +55,13 @@ jobs:
       SEQ_PORT: 3310
       DIALECT: mysql
     steps:
-      - run: if [ "$(dpkg -l | awk '/mysql-client/ {print }'|wc -l)" -eq 0 ]; then apt update && apt install mysql-client -y; fi
-      - run: mysql --host 127.0.0.1 --port 3310 -uroot -psequelize_test -e "GRANT ALL ON *.* TO 'sequelize_test'@'%' with grant option; FLUSH PRIVILEGES;"
+      - run: if [ "$(dpkg -l | awk '/default-mysql-client/ {print }'|wc -l)" -eq 0 ]; then sudo apt update && sudo apt install default-mysql-client -y; fi
+      - run: mysql --default-auth=mysql_native_password --host 127.0.0.1 --port 3310 -uroot -psequelize_test -e "GRANT ALL ON *.* TO 'sequelize_test'@'%' with grant option; FLUSH PRIVILEGES;"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run lint
-      - run: npm test
+      - run: npm run build
+      - run: npm run test:intr

@@ -1,3 +1,8 @@
+/**
+ * The Legacy API is a total drop-in replacement for [cls-hooked](https://github.com/jeff-lewis/cls-hooked).
+ * @module
+ */
+
 import debug from 'debug';
 import assert from 'node:assert';
 import util from 'node:util';
@@ -5,23 +10,26 @@ import type EventEmitter from 'node:events';
 import { Dictionary, get, isMapLike, MapLike, noop, set } from './util/_common.js';
 import { ALSBase } from './util/als.base.js';
 const d = debug('als:legacy');
+const DEBUG_ENABLED = d.enabled;
 
-// "symbols" remain as strings for backwards-compatibility with cls-hooked
-const NAMESPACES_SYMBOL = 'cls@namespaces';
-const CONTEXTS_SYMBOL = 'cls@contexts';
-const ERROR_SYMBOL = 'error@context';
+const NAMESPACES_SYMBOL = Symbol('als@namespaces');
+const CONTEXTS_SYMBOL = Symbol('als@contexts');
+const ERROR_SYMBOL = Symbol('als_error@context');
 
-const namespaces: Record<string, Namespace> =
-	process.namespaces =	// storage on `process.namespaces` remains for backwards compatibility with cls-hooked
-	process[NAMESPACES_SYMBOL] ||= {};
+const namespaces: Map<string, Namespace> =
+	process[NAMESPACES_SYMBOL] ||= new Map<string, Namespace>();
 
 // attempt to import optional dependency 'emitter-listener'
 let wrapEmitter: (emitter: EventEmitter, onAddListener: (fn) => void, onEmit: (fn) => void) => void;
 try {
 	wrapEmitter = (await import('emitter-listener')).default;
-	d('emitter-listener loaded');
+	if (DEBUG_ENABLED) {
+		d('emitter-listener loaded');
+	}
 } catch {
-	d('emitter-listener NOT loaded');
+	if (DEBUG_ENABLED) {
+		d('emitter-listener NOT loaded');
+	}
 }
 
 /**
@@ -35,7 +43,9 @@ try {
 export function createNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
 export function createNamespace<K = any, V = any>(name: string): Namespace<K, V>;
 export function createNamespace(name: string) {
-	d('createNamespace', name);
+	if (DEBUG_ENABLED) {
+		d('createNamespace', name);
+	}
 	return new Namespace(name);
 }
 
@@ -50,8 +60,10 @@ export function createNamespace(name: string) {
 export function getNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
 export function getNamespace<K = any, V = any>(name: string): Namespace<K, V>;
 export function getNamespace(name: string) {
-	d('getNamespace', name);
-	return namespaces[name];
+	if (DEBUG_ENABLED) {
+		d('getNamespace', name);
+	}
+	return namespaces.get(name);
 }
 
 /**
@@ -65,8 +77,10 @@ export function getNamespace(name: string) {
 export function getOrCreateNamespace<T extends Record<PropertyKey, any>>(name: string): Namespace<keyof T, T[keyof T]>;
 export function getOrCreateNamespace<K = any, V = any>(name: string): Namespace<K, V>;
 export function getOrCreateNamespace(name: string) {
-	d('getOrCreateNamespace', name);
-	return namespaces[name] || createNamespace(name);
+	if (DEBUG_ENABLED) {
+		d('getOrCreateNamespace', name);
+	}
+	return namespaces.get(name) || createNamespace(name);
 }
 
 /**
@@ -77,14 +91,20 @@ export function getOrCreateNamespace(name: string) {
  * destroyNamespace('myNamespace');
  */
 export function destroyNamespace(namespace: string | Namespace): void {
+	let name: string;
 	if (typeof namespace !== 'string') {
 		assert.ok(namespace instanceof Namespace, '"namespace" param should be string or instanceof Namespace');
-		namespace = namespace.name;
+		name = namespace.name;
+	} else {
+		name = namespace;
+		namespace = namespaces.get(name)!;
 	}
-	d('destroyNamespace', namespace);
-	if (namespaces[namespace]) {
-		namespaces[namespace].destroy();
-		delete namespaces[namespace];
+	if (DEBUG_ENABLED) {
+		d('destroyNamespace', namespace);
+	}
+	if (namespace) {
+		namespace.destroy();
+		namespaces.delete(name);
 	}
 }
 
@@ -95,38 +115,69 @@ export function destroyNamespace(namespace: string | Namespace): void {
  * reset();
  */
 export function reset(): void {
-	d('reset');
-	Object.keys(namespaces).forEach((name) => {
-		destroyNamespace(namespaces[name]);
-	});
+	if (DEBUG_ENABLED) {
+		d('reset');
+	}
+	for (const name of namespaces.values()) {
+		destroyNamespace(name);
+	}
 }
 
+/** @protected */
 type Modify<T, R> = Omit<T, keyof R> & R;
+/** @protected */
 type WrappedEmitterFn<T extends (this: EventEmitter<any>, ...rgs) => any> = T & { __wrapped: true };
+
+/**
+ * A utility type representing an EventEmitter that has been wrapped by {@link Namespace#bindEmitter}.
+ */
 export type WrappedEmitter<T extends EventEmitter> = Modify<T, {
 	on: WrappedEmitterFn<T['on']>;
 	once: WrappedEmitterFn<T['once']>;
 	addListener: WrappedEmitterFn<T['addListener']>;
 	removeListener: WrappedEmitterFn<T['removeListener']>;
 	emit: WrappedEmitterFn<T['emit']>;
-	_events: Record<string, Record<string, any>>;
+	_events: Record<PropertyKey, Record<PropertyKey, any>>;
 }>;
 
+/**
+ * The backbone of the {@link legacy Legacy API}, this class represents an object with the
+ * same interface as the namespace objects in [cls-hooked](https://github.com/jeff-lewis/cls-hooked),
+ * including getting/setting values and running functions in the context of the
+ * associated store.
+ *
+ * @template K - The type of keys used in the context.
+ * @template V - The type of values stored in the context.
+ *
+ * @example
+ * const ns = new Namespace('myNamespace');	// or createNamespace('myNamespace')
+ * ns.run(() => {
+ *   ns.set('key', 'value');
+ *   console.log(ns.get('key')); // Outputs: 'value'
+ * });
+ */
 export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>> {
 	name: string;
+	private d: (fn: () => string) => void;
 	private _indent = 0;
 
 	constructor(name: string) {
 		if (!name) {
 			throw new Error('Namespace must be given a name.');
 		}
-		if (namespaces[name]) {
+		if (namespaces.has(name)) {
 			throw new Error(`Namespace ${name} already exists`);
 		}
 		super();
-		namespaces[name] = this;
+		namespaces.set(name, this);
 		this.name = name;
-		this.d = d.enabled ? d.extend(name) : noop;
+		if (DEBUG_ENABLED) {
+			const dd = d.extend(name);
+			// this wrapper allows us to avoid template literal evaluation if debugging isn't enabled
+			this.d = (fn) => dd(fn());
+		} else {
+			this.d = noop as any;
+		}
 		this._indent = 0;
 	}
 
@@ -141,7 +192,7 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 	get indentStr() { return ' '.repeat(this._indent < 0 ? 0 : this._indent); }
 
 	/**
-	 * @deprecated Included for backwards compatibility. Use {@link getStore}.
+	 * @deprecated Included for backwards compatibility. Use {@link Namespace#getStore}.
 	 */
 	get active() { return this.getStore(); }
 
@@ -173,23 +224,47 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 		}
 	}
 
+	/** @hidden */
 	createStore(): Record<K extends PropertyKey ? K : never, V>;
 	createStore<T extends Dictionary<K, V>>(defaults: T): T;
 	createStore<T extends Dictionary<K, V>>(defaults?: T) {
-		const context = isMapLike(defaults) ? new Map(defaults.entries()) : defaults ? Object.create(defaults) as T : {} as Record<K extends PropertyKey ? K : never, V>;
-		return context;
+		if (!defaults) {
+			return {};
+		}
+		if (isMapLike(defaults)) {
+			return new Map(defaults.entries());
+		}
+		return Object.create(defaults);
 	}
 
 	/**
-	 * Creates a new context. This is primarily an internal utility, and shouldn't need to be called directly.
+	 * Creates a new context copied from the currently active context.
+	 * Use this with {@link Namespace#bind}, if you want to have a fresh
+	 * context at invocation time, as opposed to binding time:
 	 * @returns The created context.
+	 *
+	 * @example
+	 * function doSomething(p) {
+   * 	console.log("%s = %s", p, ns.get(p));
+	 * }
+	 *
+	 * function bindLater(callback) {
+	 * 	return ns.bind(callback, ns.createContext());
+	 * }
+	 *
+	 * setInterval(function () {
+	 * 	var bound = bindLater(doSomething);
+	 * 	bound('test');
+	 * }, 100);
 	 */
 	createContext<T extends Dictionary<K, V>>(): T {
 		const store = this.getStore() as T;
 		// Prototype inherit existing context if created a new child context within existing context.
 		const context = this.createStore<T>(store);
 		set(context, '_ns_name' as K, this.name as V);
-		d(`${this.indentStr}CONTEXT-CREATED Context: (${this.name}) context:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
+		if (DEBUG_ENABLED) {
+			this.d(() => `${this.indentStr}CONTEXT-CREATED Context: (${this.name}) context:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
+		}
 		return context;
 	}
 
@@ -226,7 +301,9 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 		const context = this.createContext();
 		return this.asyncLocalStorage.run(context, () => {
 			try {
-				d(`${this.indentStr}CONTEXT-RUN BEGIN: (${this.name}) context:${util.inspect(context)}`);
+				if (DEBUG_ENABLED) {
+					this.d(() => `${this.indentStr}CONTEXT-RUN BEGIN: (${this.name}) context:${util.inspect(context)}`);
+				}
 				const returnValue = fn(context);
 				return { context, returnValue };
 			} catch (exception) {
@@ -237,7 +314,9 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 			}
 			/* c8 ignore start */
 			finally {
-				d(`${this.indentStr}CONTEXT-RUN END: (${this.name}) ${util.inspect(context)}`);
+				if (DEBUG_ENABLED) {
+					this.d(() => `${this.indentStr}CONTEXT-RUN END: (${this.name}) ${util.inspect(context)}`);
+				}
 			}
 			/* c8 ignore stop */
 		});
@@ -262,16 +341,22 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 			throw new Error('fn must return a promise');
 		}
 
-		d(`CONTEXT-runPromise BEFORE: (${this.name}) ${util.inspect(context)}`);
+		if (DEBUG_ENABLED) {
+			this.d(() => `CONTEXT-runPromise BEFORE: (${this.name}) ${util.inspect(context)}`);
+		}
 
 		return promise
 			.then(result => {
-				d(`CONTEXT-runPromise AFTER then: (${this.name}) ${util.inspect(context)}`);
+				if (DEBUG_ENABLED) {
+					this.d(() => `CONTEXT-runPromise AFTER then: (${this.name}) ${util.inspect(context)}`);
+				}
 				return result;
 			})
 			.catch(err => {
 				err[ERROR_SYMBOL] = context;
-				d(`CONTEXT-runPromise AFTER catch: (${this.name}) ${util.inspect(context)}`);
+				if (DEBUG_ENABLED) {
+					this.d(() => `CONTEXT-runPromise AFTER catch: (${this.name}) ${util.inspect(context)}`);
+				}
 				throw err;
 			});
 	}
@@ -290,7 +375,7 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 	 */
 	bind<T extends () => any>(fn: T, context?: Dictionary<K, V>): T {
 		if (!context) {
-			context = this.active || this.createContext();
+			context = this.getStore() || this.createContext();
 		}
 
 		return this.asyncLocalStorage.run(context, () => super.bind(function nsBind() {
@@ -313,7 +398,7 @@ export class Namespace<K = any, V = any> extends ALSBase<K, V, Dictionary<K, V>>
 	 * and SHOULD NOT be called directly. Use the legacy API's `destroyNamespace()` instead, e.g.
 	 * ```js
 	 * import { createNamespace, destroyNamespace } from 'als-unhooked/legacy';
-import { AsyncLocalStorage } from 'async_hooks';
+	 * import { AsyncLocalStorage } from 'async_hooks';
 	 * const ns = createNamespace('foo');
 	 * // Do stuff ...
 	 * destroyNamespace('foo');
@@ -325,6 +410,10 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 	/**
 	 * Binds an EventEmitter to the current context.
+	 *
+	 * **NOTE**: This method will throw if the optional dependency
+	 * [emitter-listener](https://github.com/othiym23/emitter-listener) is not installed.
+	 *
 	 * @param {EventEmitter} emitter - The EventEmitter to bind.
 	 *
 	 * @example
@@ -373,6 +462,14 @@ import { AsyncLocalStorage } from 'async_hooks';
 	}
 
 	/**
+	 * This function is intended for internal use only in the Legacy API.
+	 * @hidden
+	 */
+	protected enterWith(defaults?: Dictionary<K, V>) {
+		return super.enterWith(defaults);
+	}
+
+	/**
 	 * Retrieves the context from an exception.
 	 * @param {Error} exception - The exception to retrieve the context from.
 	 * @returns {any} The context.
@@ -393,14 +490,15 @@ export default {
 	reset,
 	Namespace,
 	ERROR_SYMBOL,
+	CONTEXTS_SYMBOL,
 	NAMESPACES_SYMBOL,
 };
 
-// declare `process.namespaces` to satisfy typescript
+// declare `process[NAMESPACES_SYMBOL]` to satisfy typescript
 declare global {
   namespace NodeJS {
     interface Process {
-      namespaces: Record<string, Namespace>;
+      [NAMESPACES_SYMBOL]: Map<string, Namespace>;
     }
   }
 }

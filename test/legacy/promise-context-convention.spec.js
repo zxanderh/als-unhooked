@@ -4,7 +4,7 @@ import 'mocha';
 import * as chai from 'chai';
 const should = chai.should();
 
-import context from '../../legacy.js';
+import context from 'als-unhooked/legacy';
 
 /**
  * See https://github.com/othiym23/node-continuation-local-storage/issues/64

@@ -5,7 +5,7 @@ import * as chai from 'chai';
 import util from 'util';
 chai.should();
 
-import cls from '../../legacy.js';
+import cls from 'als-unhooked/legacy';
 
 describe('multiple namespaces handles them correctly', function() {
 

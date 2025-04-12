@@ -3,7 +3,7 @@
 import { test } from 'tap';
 
 // module under test
-import als from 'als-unhooked';
+import als from 'als-unhooked/modern';
 
 test('maps', function(t) {
 	t.plan(1);
@@ -12,6 +12,19 @@ test('maps', function(t) {
 
 	process.nextTick(() => {
 		t.equal(als.get('baz'), 'bak');
+	});
+});
+
+test('disable', function(t) {
+	t.plan(2);
+
+	const $als = new als();
+	$als.enterWith(new Map());
+
+	process.nextTick(() => {
+		t.ok($als.getStore());
+		$als.disable();
+		t.notOk($als.getStore());
 	});
 });
 

@@ -1,5 +1,5 @@
 import { test } from 'tap';
-import als from 'als-unhooked';
+import als from 'als-unhooked/modern';
 
 test('asynchronously propagating state with local-context-domains', function(t) {
 	t.plan(1);

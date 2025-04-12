@@ -1,7 +1,7 @@
 'use strict';
 
 import { expect } from 'chai';
-import * as cls from '../../legacy.js';
+import * as cls from 'als-unhooked/legacy';
 
 describe('cls edges and regression testing', function() {
 	after(function() {

@@ -3,10 +3,15 @@ import pluginJs from '@eslint/js';
 import mochaPlugin from 'eslint-plugin-mocha';
 import tseslint, { config as ts } from 'typescript-eslint';
 
+const ignores = ['docs/**/*', 'playground/**/*'];
+
 export default [
 	{languageOptions: { globals: globals.node }},
 	{languageOptions: { globals: globals.mocha }},
-	pluginJs.configs.recommended,
+	{
+		...pluginJs.configs.recommended,
+		ignores: [...ignores],
+	},
 	{
 		...mochaPlugin.configs.flat.recommended,
 		files: ['test/**/*.js'],
@@ -14,7 +19,7 @@ export default [
 	},
 	...ts({
 		files: ['**/*.ts'],
-		ignores: ['lib/'],
+		ignores: ['lib/**/*', ...ignores],
 		extends: [
 			tseslint.configs.recommended,
 		],
@@ -44,7 +49,7 @@ export default [
 	}),
 	{
 		files: ['**/*.js', '**/*.ts'],
-		ignores: ['**/*.d.ts'],
+		ignores: ['**/*.d.ts', ...ignores],
 		rules: {
 			quotes: [ 'warn', 'single', { avoidEscape: true } ],
 			'quote-props': [ 'warn', 'as-needed' ],
@@ -69,9 +74,13 @@ export default [
 		},
 	},
 	{
-		files: ['**/*.js'],
+		files: ['**/*.js', '**/*.[mc]js'],
+		ignores: [...ignores],
 		rules: {
-			'no-unused-vars': 'error',
+			'no-unused-vars': ['error', {
+				varsIgnorePattern: '^_.*?',
+				argsIgnorePattern: '^_.*?',
+			}],
 			'space-before-function-paren': [
 				'error',
 				{

@@ -4,7 +4,7 @@ import 'mocha';
 import * as chai from 'chai';
 const should = chai.should();
 import net from 'net';
-import { ALS } from 'als-unhooked';
+import ALS from 'als-unhooked/modern';
 
 describe('cls with net connection', function() {
 

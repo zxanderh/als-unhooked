@@ -2,7 +2,7 @@
 
 import { expect } from 'chai';
 
-import cls from '../../legacy.js';
+import cls from 'als-unhooked/legacy';
 
 describe('cls namespace management', function() {
 	let namespaceTest;

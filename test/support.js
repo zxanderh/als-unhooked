@@ -1,3 +1,5 @@
+// based on https://github.com/sequelize/sequelize/blob/5b7c8015c907b0dfd878ca4a9f28343a3392c307/test/support.js
+
 import { Sequelize } from 'sequelize';
 import * as chai from 'chai';
 import sinonChai from 'sinon-chai';

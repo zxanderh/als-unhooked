@@ -1,5 +1,6 @@
 
 export interface MapLike<K, V> {
+	[Symbol.iterator](): Iterator<[K, V]>;
 	entries(): Iterable<[K, V]>;
 	get(k: K): V;
 	set(k: K, v: V): void;
@@ -12,14 +13,26 @@ export type Dictionary<K, V> = (K extends PropertyKey ? Record<K, V> : never) | 
 
 /** @private */
 export function isMapLike(x: any): x is MapLike<unknown, unknown> {
-	return typeof x?.entries === 'function' && typeof x?.get === 'function' && typeof x?.set === 'function';
+	return x && x.get && x.set;//  && x[Symbol.iterator];
+}
+
+function isMapLike_get(x: any): x is MapLike<unknown, unknown> {
+	return x && x.get && typeof x.get === 'function';
+}
+
+function isMapLike_set(x: any): x is MapLike<unknown, unknown> {
+	return x && x.set && typeof x.set === 'function';
+}
+
+function isMapLike_entries(x: any): x is MapLike<unknown, unknown> {
+	return x && x.entries && typeof x.entries === 'function';
 }
 
 /** @private */
 export function entries<K, V>(obj?: Dictionary<K, V>) {
 	return !obj
 		? []
-		: isMapLike(obj)
+		: isMapLike_entries(obj)
 			? obj.entries()
 			: [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)].map((k) => [k, obj[k]] as [K, V])
 	;
@@ -27,12 +40,12 @@ export function entries<K, V>(obj?: Dictionary<K, V>) {
 
 /** @private */
 export function get<V, K>(obj: Dictionary<K, V>, key: K) {
-	return isMapLike(obj) ? obj.get(key) : obj[key as PropertyKey] as V;
+	return isMapLike_get(obj) ? obj.get(key) : obj[key as PropertyKey] as V;
 }
 
 /** @private */
 export function set<V, K>(obj: Dictionary<K, V>, key: K, value: V) {
-	isMapLike(obj) ? obj.set(key, value) : obj[key as PropertyKey] = value;
+	isMapLike_set(obj) ? obj.set(key, value) : (obj[key as PropertyKey] = value);
 }
 
 /** @private */

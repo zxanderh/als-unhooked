@@ -3,7 +3,7 @@
 import 'mocha';
 import { expect } from 'chai';
 import net from 'net';
-import cls from '../../legacy.js';
+import cls from 'als-unhooked/legacy';
 
 describe('cls with net connection', function() {
 

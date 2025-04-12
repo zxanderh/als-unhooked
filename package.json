@@ -1,15 +1,15 @@
 {
   "name": "als-unhooked",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "cls-hooked replacement using modern context tracking",
-  "main": "./lib/index.js",
+  "main": "./lib/modern.js",
   "type": "module",
   "files": [
     "lib/*"
   ],
   "exports": {
-    ".": "./lib/index.js",
-    "./no-global": "./lib/als.js",
+    ".": "./lib/modern.js",
+    "./modern": "./lib/modern.js",
     "./legacy": "./lib/legacy.js"
   },
   "scripts": {
@@ -18,16 +18,24 @@
     "build:build": "tsc",
     "build:fix": "eslint ./lib --fix",
     "----------------- TESTS ------------------------------------": "",
-    "test": "npm-run-all test:*",
-    "test:pre": "npm run build",
-    "test:mocha": "mocha test/*.js",
-    "test:mocha:legacy": "mocha test/legacy/*.js",
-    "test:tap": "tap test/tap/*.tap.ts",
+    "test": "run-s test:unit test:intr",
+    "----------------- UNIT TESTS ------------------------------------": "",
+    "test:unit": "run-s test:unit:*",
+    "test:unit:pre": "npm run build",
+    "test:unit:mocha": "mocha test/*.js",
+    "test:unit:mocha:legacy": "mocha test/legacy/*.js",
+    "test:unit:tap": "tap test/tap/*.tap.ts",
+    "----------------- INTEGRATION TESTS ------------------------------------": "",
+    "test:intr": "run-s test:intr:*",
+    "test:intr:pre": "npm run build",
+    "test:intr:mocha": "mocha test/integration/*.test.js",
+    "test:intr:tap": "tap test/integration/*.tap.ts --serial=test/integration/ --disable-coverage --allow-empty-coverage",
+    "----------------- BENCHMARK --------------------------------": "",
+    "bench": "node --expose-gc benchmark/_exec.js",
     "----------------- UTIL -------------------------------------": "",
-		"doc": "typedoc src/legacy.ts src/als.ts src/index.ts src/util/_common.ts",
+    "doc": "typedoc --options ./typedoc.js src/modern.ts src/legacy.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
-    "lint": "eslint .",
-    "prepublish": "eslint . --fix --ignore-pattern=docs/"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -51,19 +59,30 @@
   "dependencies": {
     "debug": "^4.4.0"
   },
-  "optionalDependencies": {
+  "peerDependencies": {
     "emitter-listener": "^1.1.2"
+  },
+  "peerDependenciesMeta": {
+    "emitter-listener": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@types/chai": "^5.0.1",
     "@types/debug": "^4.1.12",
+    "@types/lodash": "^4.17.16",
     "@types/superagent": "^8.1.9",
     "chai": "^5.2.0",
     "chai-as-promised": "^8.0.1",
+    "cls-hooked": "^4.2.2",
+    "emitter-listener": "^1.1.2",
     "eslint": "^9.20.1",
     "eslint-plugin-mocha": "^10.5.0",
     "globals": "^15.15.0",
+    "jsdom": "^26.0.0",
+    "lodash": "^4.17.21",
+    "mitata": "^1.0.34",
     "mocha": "^11.1.0",
     "mysql2": "^3.12.0",
     "npm-run-all": "^4.1.5",
@@ -73,8 +92,10 @@
     "sinon-chai": "^4.0.0",
     "superagent": "^10.1.1",
     "tap": "^21.1.0",
-    "ts-node": "^10.9.2",
-    "typedoc": "^0.27.9",
+    "tsx": "^4.19.3",
+    "typedoc": "^0.28.1",
+    "typedoc-plugin-missing-exports": "^4.0.0",
+    "typedoc-plugin-rename-defaults": "^0.7.3",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.25.0"
   },

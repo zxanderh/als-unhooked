@@ -2,9 +2,8 @@
 name: Deploy typedoc to Pages
 
 on:
-  # Runs on pushes targeting the main branch
   push:
-    branches: ["main"]
+    branches: ["dev", "main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -37,6 +36,7 @@ jobs:
                   path: ./docs
     deploy:
         needs: build
+        if: github.ref == 'refs/heads/main'
         runs-on: ubuntu-latest
         permissions:
             pages: write # to deploy to Pages

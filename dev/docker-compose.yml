@@ -1,0 +1,23 @@
+# based on https://github.com/sequelize/sequelize/blob/5b7c8015c907b0dfd878ca4a9f28343a3392c307/dev/mysql/8.0/docker-compose.yml
+services:
+  mysql-80:
+    container_name: sequelize-mysql-80
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: sequelize_test
+      MYSQL_USER: sequelize_test
+      MYSQL_PASSWORD: sequelize_test
+      MYSQL_ROOT_PASSWORD: sequelize_test
+    entrypoint: ['docker-entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
+    ports:
+      - 20057:3306
+    # tmpfs: /var/lib/mysql:rw
+    healthcheck:
+      test: ["CMD", "mysqladmin", "-usequelize_test", "-psequelize_test", "status"]
+      interval: 3s
+      timeout: 1s
+      retries: 10
+
+networks:
+  default:
+    name: sequelize-mysql-80-network
