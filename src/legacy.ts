@@ -118,9 +118,9 @@ export function reset(): void {
 	if (DEBUG_ENABLED) {
 		d('reset');
 	}
-	namespaces.values().forEach((name) => {
+	for (const name of namespaces.values()) {
 		destroyNamespace(name);
-	});
+	}
 }
 
 /** @protected */
