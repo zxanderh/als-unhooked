@@ -2,9 +2,8 @@
 name: Deploy typedoc to Pages
 
 on:
-  # Runs on pushes targeting the dev branch
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,7 +27,7 @@ jobs:
                   cache: npm
             - name: Generate docs
               run: |
-                  npm install
+                  npm ci
                   npm run doc
             - uses: actions/upload-pages-artifact@v3
               with:
