@@ -15,6 +15,19 @@ test('maps', function(t) {
 	});
 });
 
+test('disable', function(t) {
+	t.plan(2);
+
+	const $als = new als();
+	$als.enterWith(new Map());
+
+	process.nextTick(() => {
+		t.ok($als.getStore());
+		$als.disable();
+		t.notOk($als.getStore());
+	});
+});
+
 test('enter and exit', function(t) {
 	t.plan(3);
 

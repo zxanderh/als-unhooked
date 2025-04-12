@@ -215,7 +215,7 @@ test('event emitters bound to CLS context', function(t) {
 			t.ok(re.addListener.__wrapped, 'addListener is still wrapped');
 
 			t.equal(typeof re._events.data, 'function', 'only the one data listener');
-			t.ok(re._events.data['cls@contexts']['context@outOnReadable'],
+			t.ok(re._events.data[als.CONTEXTS_SYMBOL]['context@outOnReadable'],
 				'context is bound to listener');
 
 			re.emit('data', 'blah');

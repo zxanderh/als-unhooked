@@ -16,13 +16,13 @@ test('namespace management', function(t) {
 
 	t.doesNotThrow(function() { als.reset(); }, 'allows resetting namespaces');
 
-	t.equal(Object.keys(process.namespaces).length, 0, 'namespaces have been reset');
+	t.equal(process[als.NAMESPACES_SYMBOL].size, 0, 'namespaces have been reset');
 
 	namespace = als.createNamespace('another');
-	t.ok(process.namespaces.another, 'namespace is available from global');
+	t.ok(process[als.NAMESPACES_SYMBOL].get('another'), 'namespace is available from global');
 
 	t.doesNotThrow(function() { als.destroyNamespace('another'); },
 		'destroying works');
 
-	t.notOk(process.namespaces.another, 'namespace has been removed');
+	t.notOk(process[als.NAMESPACES_SYMBOL].get('another'), 'namespace has been removed');
 });

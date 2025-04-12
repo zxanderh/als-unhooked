@@ -9,7 +9,7 @@ import { Dictionary, entries, generateCodename, noop } from './util/_common.js';
 import debug from 'debug';
 import { ALSBase } from './util/als.base.js';
 const d = debug('als:ALS');
-// ToDo: debugging
+const DEBUG_ENABLED = d.enabled;
 
 /**
  * The backbone of the {@link modern Modern API}, this class provides a modern implementation for managing key-value
@@ -20,16 +20,20 @@ const d = debug('als:ALS');
  * @template V - The type of values in the store.
  */
 export class ALS<K = any, V = any> extends ALSBase<K, V, Map<K, V>> {
-	protected d = d.enabled ? d.extend(generateCodename()) : noop;
+	protected d = DEBUG_ENABLED ? d.extend(generateCodename()) : noop;
 
 	constructor() {
 		super();
-		this.d('constructor');
+		if (DEBUG_ENABLED) {
+			this.d('constructor');
+		}
 	}
 
 	/** @hidden */
 	protected createStore(defaults?: Dictionary<K, V>) {
-		this.d('createStore', defaults);
+		if (DEBUG_ENABLED) {
+			this.d('createStore', defaults);
+		}
 		return new Map(entries(defaults));
 	}
 
@@ -54,6 +58,16 @@ export class ALS<K = any, V = any> extends ALSBase<K, V, Map<K, V>> {
 	 */
 	exit<T>(fn: () => T) {
 		return this.asyncLocalStorage.exit(fn);
+	}
+
+	/**
+	 * Disables the instance of ALS and its underlying AsyncLocalStorage instance.
+	 * See {@link AsyncLocalStorage#disable} for implications.
+	 * Marked experimental as it depends on {@link AsyncLocalStorage#disable}
+	 * @experimental
+	 */
+	disable() {
+		return this.asyncLocalStorage.disable();
 	}
 
 	/**
