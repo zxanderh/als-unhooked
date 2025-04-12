@@ -28,7 +28,7 @@ jobs:
                   cache: npm
             - name: Generate docs
               run: |
-                  npm ci
+                  npm install
                   npm run doc
             - uses: actions/upload-pages-artifact@v3
               with:
@@ -37,6 +37,7 @@ jobs:
                   path: ./docs
     deploy:
         needs: build
+        if: github.ref == 'refs/heads/main'
         runs-on: ubuntu-latest
         permissions:
             pages: write # to deploy to Pages
