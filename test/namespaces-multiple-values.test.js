@@ -4,7 +4,7 @@ import 'mocha';
 import { expect } from 'chai';
 import util from 'util';
 
-import ALS from 'als-unhooked';
+import ALS from 'als-unhooked/modern';
 
 describe('multiple namespaces handles them correctly', function() {
 

@@ -3,7 +3,7 @@
 import { test } from 'tap';
 
 // module under test
-import als from 'als-unhooked';
+import als from 'als-unhooked/modern';
 
 test('maps', function(t) {
 	t.plan(1);

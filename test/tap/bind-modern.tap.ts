@@ -2,7 +2,7 @@
 
 import { test } from 'tap';
 import { EventEmitter } from 'events';
-import als from 'als-unhooked';
+import als from 'als-unhooked/modern';
 
 const eventName = 'foo';
 const key = 'bread';

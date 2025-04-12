@@ -1,7 +1,7 @@
 'use strict';
 
 import { test } from 'tap';
-import ALS from 'als-unhooked';
+import ALS from 'als-unhooked/modern';
 import crypto from 'crypto';
 
 test('continuation-local state with crypto.randomBytes', function(t) {

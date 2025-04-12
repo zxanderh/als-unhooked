@@ -3,7 +3,7 @@
 import tap, { Test } from 'tap';
 import Support from '../support.js';
 import { Sequelize, DataTypes, Model, ModelStatic, QueryTypes } from 'sequelize';
-import { ALS } from 'als-unhooked';
+import { ALS } from 'als-unhooked/modern';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const sequelize = Support.sequelize as Sequelize;

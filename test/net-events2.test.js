@@ -2,7 +2,7 @@
 
 import { expect } from 'chai';
 import net from 'net';
-import ALS from 'als-unhooked';
+import ALS from 'als-unhooked/modern';
 
 describe('cls with net connection 2', function() {
 

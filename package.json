@@ -9,6 +9,7 @@
   ],
   "exports": {
     ".": "./lib/modern.js",
+    "./modern": "./lib/modern.js",
     "./legacy": "./lib/legacy.js"
   },
   "scripts": {
