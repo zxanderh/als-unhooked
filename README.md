@@ -86,7 +86,9 @@ promise handlers.
 
 ## Documentation
 
-Coming Soon
+[API Docs](https://zxanderh.github.io/als-unhooked/)
+
+Guides: Coming Soon
 
 ## Copyright & License
 
