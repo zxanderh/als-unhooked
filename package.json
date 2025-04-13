@@ -8,7 +8,7 @@
     "lib/*"
   ],
   "exports": {
-    ".": "./lib/modern.js",
+    ".": "./lib/legacy.js",
     "./modern": "./lib/modern.js",
     "./legacy": "./lib/legacy.js"
   },
