@@ -14,7 +14,7 @@
   },
   "scripts": {
     "----------------- BUILD ------------------------------------": "",
-    "build": "npm-run-all build:*",
+    "build": "run-s build:*",
     "build:build": "tsc",
     "build:fix": "eslint ./lib --fix",
     "----------------- TESTS ------------------------------------": "",
@@ -35,7 +35,8 @@
     "----------------- UTIL -------------------------------------": "",
     "doc": "typedoc --options ./typedoc.js src/modern.ts src/legacy.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -68,6 +69,10 @@
     }
   },
   "devDependencies": {
+    "@action-validator/cli": "^0.6.0",
+    "@action-validator/core": "^0.6.0",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "@eslint/js": "^9.20.0",
     "@types/chai": "^5.0.1",
     "@types/debug": "^4.1.12",
@@ -80,6 +85,7 @@
     "eslint": "^9.20.1",
     "eslint-plugin-mocha": "^10.5.0",
     "globals": "^15.15.0",
+    "husky": "^9.1.7",
     "jsdom": "^26.0.0",
     "lodash": "^4.17.21",
     "mitata": "^1.0.34",

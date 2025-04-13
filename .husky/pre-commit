@@ -1,0 +1,12 @@
+set -e
+
+npm run build
+npm run test:unit:tap --- -n
+npm run lint
+
+for file in $(ls .github/workflows/); do
+  if [ -f ".github/workflows/$file" ]; then
+		echo "Checking .github/workflows/$file"
+    npx action-validator .github/workflows/$file
+  fi
+done
