@@ -1,10 +1,20 @@
 'use strict';
 import { test } from 'tap';
 
-import { noop } from '../../lib/util/_common.js';
+test('misc', async function(t) {
+	t.plan(2);
 
-test('misc', function(t) {
-	t.plan(1);
+	let doImport;
+	let misc;
+	const cjs = typeof require === 'function' && typeof module !== 'undefined' && module.exports;
 
-	t.equal(noop(), undefined);
+	if (cjs) {
+		doImport = () => misc = t.mockRequire('../../lib/cjs/util/_common.js', {});
+	} else {
+		doImport = async () => misc = await t.mockImport('../../lib/esm/util/_common.js', {});
+	}
+
+
+	await t.resolves(async () => doImport());
+	t.equal(misc.noop(), undefined);
 });

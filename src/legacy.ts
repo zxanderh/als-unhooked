@@ -118,7 +118,7 @@ export function reset(): void {
 	if (DEBUG_ENABLED) {
 		d('reset');
 	}
-	for (const name of namespaces.values()) {
+	for (const name of Array.from(namespaces.values())) {
 		destroyNamespace(name);
 	}
 }
