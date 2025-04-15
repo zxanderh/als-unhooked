@@ -78,8 +78,9 @@ export default [
 		ignores: [...ignores],
 		rules: {
 			'no-unused-vars': ['error', {
-				varsIgnorePattern: '^_.*?',
-				argsIgnorePattern: '^_.*?',
+				varsIgnorePattern: '^_.*',
+				argsIgnorePattern: '^_.*',
+				caughtErrorsIgnorePattern: '^_.*',
 			}],
 			'space-before-function-paren': [
 				'error',
