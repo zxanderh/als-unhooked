@@ -2,32 +2,40 @@
   "name": "als-unhooked",
   "version": "0.1.3",
   "description": "cls-hooked replacement using modern context tracking",
-  "main": "./lib/legacy.js",
+  "main": "./lib/cjs/legacy.js",
   "type": "module",
   "files": [
     "lib/*"
   ],
   "exports": {
-    ".": "./lib/legacy.js",
-    "./modern": "./lib/modern.js",
-    "./legacy": "./lib/legacy.js"
+    ".": {
+      "require": "./lib/cjs/legacy.js",
+      "import": "./lib/esm/legacy.js"
+    },
+    "./modern": {
+      "require": "./lib/cjs/modern.js",
+      "import": "./lib/esm/modern.js"
+    },
+    "./legacy": {
+      "require": "./lib/cjs/legacy.js",
+      "import": "./lib/esm/legacy.js"
+    }
   },
   "scripts": {
     "----------------- BUILD ------------------------------------": "",
     "build": "run-s build:*",
-    "build:build": "tsc",
+    "build:esm": "tsx dev/build.ts",
+    "build:cjs": "tsx dev/build.ts -m commonjs -t es5 --moduleResolution node10",
     "build:fix": "eslint ./lib --fix",
     "----------------- TESTS ------------------------------------": "",
-    "test": "run-s test:unit test:intr",
+    "test": "tsx test/exec.ts",
     "----------------- UNIT TESTS ------------------------------------": "",
     "test:unit": "run-s test:unit:*",
-    "test:unit:pre": "npm run build",
     "test:unit:mocha": "mocha test/*.js",
     "test:unit:mocha:legacy": "mocha test/legacy/*.js",
     "test:unit:tap": "tap test/tap/*.tap.ts",
     "----------------- INTEGRATION TESTS ------------------------------------": "",
     "test:intr": "run-s test:intr:*",
-    "test:intr:pre": "npm run build",
     "test:intr:mocha": "mocha test/integration/*.test.js",
     "test:intr:tap": "tap test/integration/*.tap.ts --serial=test/integration/ --disable-coverage --allow-empty-coverage",
     "----------------- BENCHMARK --------------------------------": "",
@@ -92,6 +100,7 @@
     "mocha": "^11.1.0",
     "mysql2": "^3.12.0",
     "npm-run-all": "^4.1.5",
+    "pkg-dir": "^8.0.0",
     "semver": "^7.7.1",
     "sequelize": "^6.37.5",
     "sinon": "^19.0.2",
