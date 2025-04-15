@@ -2,13 +2,13 @@
   "name": "als-unhooked",
   "version": "0.1.3",
   "description": "cls-hooked replacement using modern context tracking",
-  "main": "./lib/modern.js",
+  "main": "./lib/legacy.js",
   "type": "module",
   "files": [
     "lib/*"
   ],
   "exports": {
-    ".": "./lib/modern.js",
+    ".": "./lib/legacy.js",
     "./modern": "./lib/modern.js",
     "./legacy": "./lib/legacy.js"
   },
