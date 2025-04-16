@@ -1,4 +1,4 @@
-import { ALS } from 'als-unhooked';
+import { ALS } from 'als-unhooked/modern';
 import legacy from 'als-unhooked/legacy';
 import clsHooked from 'cls-hooked';
 import _ from 'lodash';
