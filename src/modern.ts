@@ -103,7 +103,7 @@ const diSym = Symbol('defaultInstance');
  * The singleton pattern is convenient for basic applications that don't need multiple stores.
  *
  * @example
- * import als from 'als-unhooked';
+ * import als from 'als-unhooked/modern';
  *
  * // Using as a singleton
  * als.run(() => {

@@ -10,7 +10,7 @@ export default {
 	theme: 'als-unhooked',
 	// treatWarningsAsErrors: true,
 	useTsLinkResolution: true,
-	highlightLanguages: ['typescript', 'sql', 'javascript', 'shellscript'],
+	highlightLanguages: ['typescript', 'sql', 'javascript', 'shellscript', 'json', 'yaml'],
 	excludeReferences: true,
 	groupOrder: ['Classes', 'Functions', '*', 'Interfaces', 'Type Aliases'],
 	sort: ['static-first', 'source-order'],
