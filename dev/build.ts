@@ -2,22 +2,6 @@ import * as ts from 'typescript';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
-// replaces top-level async import with regular require for cjs
-export function transform(): ts.TransformerFactory<ts.SourceFile> {
-	const regex = /\(await import\('emitter-listener'\)\)\.default/;
-	return (): ts.Transformer<ts.SourceFile> => {
-		return (sf: ts.SourceFile) => {
-			const fullText = sf.getFullText(sf);
-			const res = regex.exec(fullText);
-			const replacement = "require('emitter-listener')";
-			if (res) {
-				return sf.update(fullText.replace(regex, replacement), { span: { start: res?.index, length: res[0].length }, newLength: replacement.length });
-			}
-			return sf;
-		};
-	};
-}
-
 function reportDiagnostics(diagnostics: ts.Diagnostic[]): void {
 	diagnostics.forEach(diagnostic => {
 		let message = 'Error';
@@ -35,6 +19,12 @@ function reportDiagnostics(diagnostics: ts.Diagnostic[]): void {
 	});
 }
 
+function writeFile(fileName: string, content: string) {
+	if (fileName.endsWith('legacy.js')) {
+		content = content.replace(/wrapEmitter = \(await.*?$/m, "wrapEmitter = require('emitter-listener')");
+	}
+	return ts.sys.writeFile(fileName, content);
+}
 
 function compile(): void {
 	// Extract configuration from config file and cli args
@@ -46,7 +36,8 @@ function compile(): void {
 	let emitResult: ts.EmitResult;
 	if (config.options.module === ts.ModuleKind.CommonJS) {
 		config.options.outDir = path.join(config.options.outDir || './lib', 'cjs');
-		emitResult = program.emit(undefined, undefined, undefined, undefined, { before: [ transform() ] });
+		config.options.noEmitOnError = false;
+		emitResult = program.emit(undefined, writeFile);
 
 		// Write a package.json with type=commonjs
 		fs.writeFileSync(path.join(config.options.outDir!, 'package.json'), '{"type": "commonjs"}');
