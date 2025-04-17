@@ -1,6 +1,6 @@
 {
   "name": "als-unhooked",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "cls-hooked replacement using modern context tracking",
   "main": "./lib/cjs/legacy.js",
   "type": "module",
