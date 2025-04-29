@@ -54,11 +54,13 @@ Later on in the lifetime of the request, you need to record which user created s
 ```javascript
 // thing.module.js
 
-import als from 'als-unhooked/modern';
+import als from 'als-unhooked/legacy';
 import db from './lib/db.js';
 
+const namespace = als.getNamespace('user_session');
+
 async function createThing(_thing) {
-  _thing.createdBy = als.get('user').id;
+  _thing.createdBy = namespace.get('user').id;
   await db.thing.create(_thing);
 }
 ```
