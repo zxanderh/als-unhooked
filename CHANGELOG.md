@@ -1,5 +1,7 @@
 # `als-unhooked` Changelog
 
+**NOTICE** : Starting with version 1.0.0, see [Releases](https://github.com/zxanderh/als-unhooked/releases) for changelog.
+
 ## Next
 
 * Improved types and docs
