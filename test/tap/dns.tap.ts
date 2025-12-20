@@ -89,7 +89,7 @@ test('continuation-local state with MakeCallback and DNS module', function(t) {
 				namespace.set('test', 212);
 				t.equal(namespace.get('test'), 212, 'state has been mutated');
 
-				dns.resolveCname('www.example.com', function(err, addresses) {
+				dns.resolveCname('www.github.com', function(err, addresses) {
 					t.notOk(err, 'lookup succeeded');
 					t.ok(addresses.length > 0, 'some results were found');
 
