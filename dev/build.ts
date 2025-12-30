@@ -10,20 +10,13 @@ function reportDiagnostics(diagnostics: ts.Diagnostic[]): void {
 			message += ` ${diagnostic.file.fileName} (${line + 1},${character + 1})`;
 		}
 		const errMsg = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-		if (errMsg.startsWith("Top-level 'await' expressions are only allowed")) {
-			// ignore this error because we'll rectify it later
-			return;
-		}
+		// if (errMsg.startsWith("Top-level 'await' expressions are only allowed")) {
+		// 	// ignore this error because we'll rectify it later
+		// 	return;
+		// }
 		message += ': ' + errMsg;
 		console.log(message);
 	});
-}
-
-function writeFile(fileName: string, content: string) {
-	if (fileName.endsWith('legacy.js')) {
-		content = content.replace(/wrapEmitter = \(await.*?$/m, "wrapEmitter = require('emitter-listener')");
-	}
-	return ts.sys.writeFile(fileName, content);
 }
 
 function compile(): void {
@@ -37,7 +30,7 @@ function compile(): void {
 	if (config.options.module === ts.ModuleKind.CommonJS) {
 		config.options.outDir = path.join(config.options.outDir || './lib', 'cjs');
 		config.options.noEmitOnError = false;
-		emitResult = program.emit(undefined, writeFile);
+		emitResult = program.emit(undefined, ts.sys.writeFile);
 
 		// Write a package.json with type=commonjs
 		fs.writeFileSync(path.join(config.options.outDir!, 'package.json'), '{"type": "commonjs"}');

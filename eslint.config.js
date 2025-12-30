@@ -3,7 +3,7 @@ import pluginJs from '@eslint/js';
 import mochaPlugin from 'eslint-plugin-mocha';
 import tseslint, { config as ts } from 'typescript-eslint';
 
-const ignores = ['docs/**/*', 'playground/**/*'];
+const ignores = ['docs/**/*', 'playground/**/*', 'lib/**/*'];
 
 export default [
 	{languageOptions: { globals: globals.node }},

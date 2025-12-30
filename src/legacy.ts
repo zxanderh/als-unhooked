@@ -9,6 +9,7 @@ import util from 'node:util';
 import type EventEmitter from 'node:events';
 import { Dictionary, get, isMapLike, MapLike, noop, set } from './util/_common.js';
 import { ALSBase } from './util/als.base.js';
+import getWrapEmitter from './util/wrapEmitter.shim.cjs';
 const d = debug('als:legacy');
 const DEBUG_ENABLED = d.enabled;
 
@@ -19,18 +20,7 @@ const ERROR_SYMBOL = Symbol('als_error@context');
 const namespaces: Map<string, Namespace> =
 	process[NAMESPACES_SYMBOL] ||= new Map<string, Namespace>();
 
-// attempt to import optional dependency 'emitter-listener'
-let wrapEmitter: (emitter: EventEmitter, onAddListener: (fn) => void, onEmit: (fn) => void) => void;
-try {
-	wrapEmitter = (await import('emitter-listener')).default;
-	if (DEBUG_ENABLED) {
-		d('emitter-listener loaded');
-	}
-} catch {
-	if (DEBUG_ENABLED) {
-		d('emitter-listener NOT loaded');
-	}
-}
+const wrapEmitter = getWrapEmitter(d);
 
 /**
  * Creates a new namespace.

@@ -2,7 +2,7 @@
   "name": "als-unhooked",
   "version": "1.0.2",
   "description": "cls-hooked replacement using modern context tracking",
-  "main": "./lib/cjs/legacy.js",
+  "main": "./lib/esm/legacy.js",
   "type": "module",
   "files": [
     "lib/*"
@@ -10,14 +10,17 @@
   "exports": {
     ".": {
       "require": "./lib/cjs/legacy.js",
+      "module-sync": "./lib/esm/legacy.js",
       "import": "./lib/esm/legacy.js"
     },
     "./modern": {
       "require": "./lib/cjs/modern.js",
+      "module-sync": "./lib/esm/modern.js",
       "import": "./lib/esm/modern.js"
     },
     "./legacy": {
       "require": "./lib/cjs/legacy.js",
+      "module-sync": "./lib/esm/legacy.js",
       "import": "./lib/esm/legacy.js"
     }
   },
@@ -26,7 +29,6 @@
     "build": "run-s build:*",
     "build:esm": "tsx dev/build.ts",
     "build:cjs": "tsx dev/build.ts -m commonjs -t es5 --moduleResolution node10",
-    "build:fix": "eslint ./lib --fix",
     "----------------- TESTS ------------------------------------": "",
     "test": "tsx test/exec.ts",
     "----------------- UNIT TESTS ------------------------------------": "",
@@ -40,6 +42,10 @@
     "test:intr:tap": "tap test/integration/*.tap.ts --serial=test/integration/ --disable-coverage --allow-empty-coverage",
     "----------------- BENCHMARK --------------------------------": "",
     "bench": "node --expose-gc benchmark/_exec.js",
+    "----------------- ACTIONS (LOCAL) -------------------------------------": "",
+    "act": "act -P ubuntu-latest=catthehacker/ubuntu:act-latest --workflows \".github/workflows/node.js.yml\"",
+    "act:unit": "npm run act -- --job unit",
+    "act:intr": "npm run act -- --job integration",
     "----------------- UTIL -------------------------------------": "",
     "doc": "typedoc --options ./typedoc.js src/modern.ts src/legacy.ts src/util/_common.ts",
     "debug": "node --nolazy --debug-brk=5858 ",
@@ -106,7 +112,7 @@
     "sinon": "^19.0.5",
     "sinon-chai": "^4.0.0",
     "superagent": "^10.2.0",
-    "tap": "^21.1.0",
+    "tap": "^21.5.0",
     "tsx": "^4.19.3",
     "typedoc": "^0.28.2",
     "typedoc-plugin-missing-exports": "^4.0.0",
@@ -121,5 +127,11 @@
     "url": "https://github.com/zxanderh/als-unhooked/issues"
   },
   "homepage": "https://github.com/zxanderh/als-unhooked#readme",
-  "typings": "./lib/index.d.ts"
+  "typings": "./lib/index.d.ts",
+  "tap": {
+    "coverage-exclude": [
+      "./lib/cjs/**/*"
+    ],
+    "show-full-coverage": true
+  }
 }
