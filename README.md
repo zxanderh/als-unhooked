@@ -4,7 +4,7 @@
 
 **This is a fork of [cls-hooked] using [AsyncLocalStorage] instead of [async_hooks].**
 
-Asynchronous context tracking has come a long way in the last decade. [AsyncLocalStorage], the official stable implementation of [async_hooks], provides many optimizations we can benefit from. And with the introduction of AsyncContextFrame in v22, async_hooks can be left behind completely. Therefore, this package provides a drop-in replacement for [cls-hooked] based on AsyncLocalStorage, so it can continue to benefit from ongoing development by the Node.js team.
+Asynchronous context tracking has matured. [AsyncLocalStorage], the stable [async_hooks] implementation, brings significant optimizations, and AsyncContextFrame (v22+, enabled by default in v24+) lets us drop async_hooks entirely. This package is a drop-in [cls-hooked] replacement built on AsyncLocalStorage to keep pace with ongoing Node.js improvements.
 
 ## Contents
 
@@ -49,7 +49,7 @@ app.use(async (req, res, next) => {
 });
 ```
 
-Later on in the lifetime of the request, you need to record which user created some database record:
+Later on in the request lifecycle, you need to attribute the creation of some record to that user:
 
 ```javascript
 // thing.module.js
@@ -67,10 +67,7 @@ async function createThing(_thing) {
 
 ### Use with Sequelize v6
 
-A major motivator in creating this package was for use with [sequelize v6][v6],
-which uses [cls-hooked] for [automatic transaction passing][autotxn].
-This package is not officially supported by sequelize at this time, but the Modern API
-has been designed to be compatible with sequelize's implementation of cls-hooked.
+Built to work with [sequelize v6][v6], which uses [cls-hooked] for [automatic transaction passing][autotxn]:
 
 ```javascript
 // app.js
@@ -81,15 +78,14 @@ import ALS from 'als-unhooked/modern';
 Sequelize.useCLS(new ALS());
 ```
 
-The Legacy API is, of course, also compatible with sequelize. But the modern API is
-recommended as it is more performant.
+The Legacy API works with sequelize too, but Modern is faster.
 
 ### Overriding Sub-dependencies
 
-If you don't use cls-hooked directly, but one of your (sub-)dependencies does, you can add an override
-to your package.json:
+If you don't use cls-hooked directly, but one of your (sub-)dependencies does, you can add an override. The syntax differs slightly depending on your package manager.
 
-```json
+For [npm] and [bun]:
+```jsonc
 // package.json
 {
   // ...
@@ -99,10 +95,8 @@ to your package.json:
 }
 ```
 
-The "overrides" field works with [npm] and [bun]. If you use [yarn] or [pnpm], the syntax is slightly different:
-
-With [yarn]:
-```json
+For [yarn]:
+```jsonc
 // package.json
 {
   // ...
@@ -112,7 +106,7 @@ With [yarn]:
 }
 ```
 
-With [pnpm]:
+For [pnpm]:
 ```yaml
 // pnpm-workspace.yaml
 overrides:
@@ -141,7 +135,7 @@ JS benchmarks should always be taken with a grain of salt. That said, the follow
 
 > Note: Only the average run times are shown. See [benchmark/_exec.js](./benchmark/_exec.js) for more details on how the benchmarks are run.
 
-> Note 2: The Modern API was retrofitted with some functionality from the legacy interface for the purpose of these tests.
+> Note 2: The Modern API was retrofitted with some functionality from the legacy interface for testing parity.
 
 ## Working with EventEmitters
 
@@ -172,7 +166,7 @@ namespace.run(() => {
 });
 ```
 
-If you determine that you do need to use [Namespace#bindEmitter], be sure to install [emitter-listener], as it is not installed alongside als-unhooked by default.
+If you do need to use [Namespace#bindEmitter], be sure to install [emitter-listener], as it is not installed alongside als-unhooked by default.
 
 ## Acknowledgments
 
