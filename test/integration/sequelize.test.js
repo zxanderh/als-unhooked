@@ -10,6 +10,7 @@ import sinon from 'sinon';
 const current = Support.sequelize;
 
 if (current.dialect.supports.transactions) {
+
 	describe(Support.getTestDialectTeaser('CLS (Async hooks)'), function() {
 		before(function() {
 			current.constructor.useCLS(cls.createNamespace('sequelize'));

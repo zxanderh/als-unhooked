@@ -1,7 +1,8 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
 import mochaPlugin from 'eslint-plugin-mocha';
-import tseslint, { config as ts } from 'typescript-eslint';
+import tseslint from 'typescript-eslint';
+import { defineConfig } from 'eslint/config';
 
 const ignores = ['docs/**/*', 'playground/**/*', 'lib/**/*'];
 
@@ -13,11 +14,11 @@ export default [
 		ignores: [...ignores],
 	},
 	{
-		...mochaPlugin.configs.flat.recommended,
+		...mochaPlugin.configs.recommended,
 		files: ['test/**/*.js'],
 		ignores: ['test/tap/*.js'],
 	},
-	...ts({
+	...defineConfig({
 		files: ['**/*.ts'],
 		ignores: ['lib/**/*', ...ignores],
 		extends: [
