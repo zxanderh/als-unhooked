@@ -96,7 +96,7 @@
     "chai-as-promised": "^8.0.2",
     "cls-hooked": "^4.2.2",
     "emitter-listener": "^1.1.2",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.0",
     "eslint-plugin-mocha": "^11.2.0",
     "globals": "^17.0.0",
     "husky": "^9.1.7",
