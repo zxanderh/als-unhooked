@@ -4,7 +4,7 @@
 
 **This is a fork of [cls-hooked] using [AsyncLocalStorage] instead of [async_hooks].**
 
-Asynchronous context tracking has matured. [AsyncLocalStorage], the stable [async_hooks] implementation, brings significant optimizations, and AsyncContextFrame (v22+, enabled by default in v24+) lets us drop async_hooks entirely. This package is a drop-in [cls-hooked] replacement built on AsyncLocalStorage to keep pace with ongoing Node.js improvements.
+Asynchronous context tracking has come a long way in the last decade. [AsyncLocalStorage], the official stable implementation of [async_hooks], provides many optimizations we can benefit from. And with the introduction of AsyncContextFrame in v22, async_hooks can be left behind completely. This package is a drop-in [cls-hooked] replacement built on AsyncLocalStorage to keep pace with ongoing Node.js improvements.
 
 ## Contents
 
