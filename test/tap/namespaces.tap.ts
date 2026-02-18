@@ -18,6 +18,7 @@ test('namespace management', function(t) {
 
 	t.equal(process[als.NAMESPACES_SYMBOL].size, 0, 'namespaces have been reset');
 
+	// eslint-disable-next-line no-useless-assignment
 	namespace = als.createNamespace('another');
 	t.ok(process[als.NAMESPACES_SYMBOL].get('another'), 'namespace is available from global');
 

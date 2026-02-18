@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as cp from 'node:child_process';
 import _ from 'lodash';
-import { packageDirectorySync } from 'pkg-dir';
+import { packageDirectorySync } from 'package-directory';
 
 const root = packageDirectorySync();
 if (!root) {
