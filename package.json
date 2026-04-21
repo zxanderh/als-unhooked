@@ -91,7 +91,7 @@
     "@types/chai": "^5.2.3",
     "@types/debug": "^4.1.12",
     "@types/lodash": "^4.17.23",
-    "@types/node": "^24.10.13",
+    "@types/node": "^25.3.3",
     "@types/superagent": "^8.1.9",
     "chai": "^6.2.2",
     "chai-as-promised": "^8.0.2",
